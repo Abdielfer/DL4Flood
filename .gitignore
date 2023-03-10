@@ -1,0 +1,25 @@
+*__pycache__**
+*.idea**
+*.vscode**
+
+#Data
+*.csv
+*.GTiff
+*.tiff
+*.shp
+*.pkl
+*.txt
+*.png
+*.jpg
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
