@@ -1,22 +1,28 @@
 import os
 import glob
+import csv
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
 import util as U
-'''
-Note: Needs three methods __init__, __getitem__, __len__
-
-'''
 
 class customDataSet(Dataset):
-    def __init__(self, folder_root:os.path):
+    def __init__(self, folder_root:os.path, datasetTipe:str):
         super(customDataSet, self).__init__()
         self.scv_list = U.listFreeFilesInDirByExt(folder_root)  
         self.folder_path = folder_root
         self.img_files = []
         self.mask_files = []
+        for scvName in self.scv_list:
+            if datasetTipe is scvName:
+                file = os.path.join(folder_root,scvName) 
+                with open(file, "r") as f:
+                    reader = csv.reader(f, delimiter=";")
+                    for i, line in enumerate(reader):
+                        self.img_files.append(line[0])
+                        self.mask_files.append(line[1])
+                        
+                
 
-    
     def __len__(self):
         return len(self.img_files)
     
