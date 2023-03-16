@@ -11,10 +11,11 @@ Note: Needs three methods __init__, __getitem__, __len__
 class customDataSet(Dataset):
     def __init__(self, folder_root:os.path):
         super(customDataSet, self).__init__()
-        self.scv_list = U.listALLFilesInDirByExt()  
+        self.scv_list = U.listFreeFilesInDirByExt(folder_root)  
         self.folder_path = folder_root
         self.img_files = []
         self.mask_files = []
+
     
     def __len__(self):
         return len(self.img_files)
