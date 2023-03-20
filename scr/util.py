@@ -28,7 +28,7 @@ def makeNameByTime():
     name = time.strftime("%y%m%d%H%M")
     return name
 
-## modeling manipulation
+## mode manipulation
 def saveModel(estimator, id):
     name = id + ".pkl" 
     _ = joblib.dump(estimator, name, compress=9)
@@ -305,6 +305,12 @@ def reshape_as_raster(arr):
     return: arr as image in raster order (bands, rows, columns)
     '''
     return np.transpose(arr, [2, 0, 1])
+
+
+def saveImag(pathToSave, imag):
+    ## Save the image in self.savePath. Determine if we save tif with rasterio or png standard. 
+    pass
+    
 
 ## From here on NOT READY !!!
 def clipRasterWithPoligon(rastPath, polygonPath,outputPath):
