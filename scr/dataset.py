@@ -2,56 +2,71 @@ import os
 import glob
 import csv
 from torch.utils.data import Dataset, DataLoader
+from torchgeo.datasets import RasterDataset, unbind_samples, stack_samples
 import torchvision.transforms as transforms
 import util as U
+import rasterio 
 
 class customDataSet(Dataset):
-    def __init__(self, folder_root:os.path, datasetTipe:str):
+    def __init__(self, imgMaskList:os.path):
         super(customDataSet, self).__init__()
-        self.scv_list = U.listFreeFilesInDirByExt(folder_root)  
-        self.folder_path = folder_root
-        self.img_files = []
-        self.mask_files = []
-        for scvName in self.scv_list:
-            if datasetTipe is scvName:
-                file = os.path.join(folder_root,scvName) 
-                with open(file, "r") as f:
-                    reader = csv.reader(f, delimiter=";")
-                    for i, line in enumerate(reader):
-                        self.img_files.append(line[0])
-                        self.mask_files.append(line[1])
-                        
-                
+        self.imgMaskList = imgMaskList
+        self.img_list = []
+        self.mask_list = []
+        with open(self.imgMaskList, "r") as f:
+            reader = csv.reader(f, delimiter=";")
+            for i, line in enumerate(reader):
+                self.img_list.append(line[0])
+                self.mask_list.append(line[1])
+        if len(self.img_list)!= len(self.mask_list):
+            raise ValueError("Mismatch between the number of images and masks. You can run customDataSet._VerifyListsContent()")
 
     def __len__(self):
-        return len(self.img_files)
+        return len(self.img_list)
     
     def __getitem__(self, index):
-        img_path = self.img_files[index]
-        mask_path = self.mask_files[index]
-        data = use opencv or pil read image using img_path
-        label =use opencv or pil read label  using mask_path
-        return torch.from_numpy(data).float(), torch.from_numpy(label).float()
+        img_path = self.img_list[index]
+        mask_path = self.mask_list[index]
+        with rasterio.open(img_path, 'r') as sat_handle:
+            img = U.reshape_as_image(sat_handle.read())
+            #  metadata = sat_handle.meta
+        with rasterio.open(mask_path, 'r') as label_handle:
+            mask = U.reshape_as_image(label_handle.read())
+            mask = mask[..., 0]      
+        return {"image": img, "mask": mask}
 
+    def _VerifyListsContent(sefl):
+        pass 
+
+    
+# TODO : define *args type  ## 
+class customDataloader(DataLoader):
+    def __init__(self, dataset:customDataSet, *args, inlineTranform: transforms = None, 
+                 offlineTranform: transforms = None):
+        super(customDataloader, self).__init__()
+        self.savePath = args.savepath
+        self.dataset_purpose = args.datasetPurpous ### trn, val, tst
+
+    def saveImag(imag):
+        ## Save the image in self.savePath. Determine if we save tif with rasterio or png standard. 
+        pass
+    
     def __inlineTranformation__(self,transformer:transforms,imag,label):
         imag = transformer(imag)
         label = transformer(label)
         return imag,label
-    
+       
     def __offlineTransformation__(self, savePath, transformer:transforms, imag, label):
         '''
         Perform the transformation in <transformer> and save <image_transformed> and
          <label_transformed> in <savePath>.
         '''
-        imag = transformer(imag)
-        self.saveImag(self.folder_path,imag)
-        label = transformer(label)
-        self.saveImag(self.folder_path,label)
-        return imag,label
-    
-    def saveImag(self.folder_path,imag):
-        pass
-    
+        imag_trans = transformer(imag)
+        self.saveImag(imag_trans)
+        label_trans = transformer(label_trans)
+        self.saveImag(label_trans)
+        
+    ## to be finished
     def _SetInitsFromFolder(self, folder_root:os.path):
         '''
         In the absence sof *.csv with paht to images and labels, we asume both(image and label has same name in diferent subfolder of main pathFolderRoot <folder_path> )
@@ -61,10 +76,5 @@ class customDataSet(Dataset):
         self.img_files = glob.glob(os.path.join(folder_root,'images','*.tif'))
         self.mask_files = []
         for img_path in self.img_files:
-             self.mask_files.append(os.path.join(folder_root,'labels_burned',os.path.basename(img_path)))
-             
-class customDataloader(DataLoader):
-    def __init__(self,dtaset:customDataSet, *args):
-        super(customDataloader, self).__init__()
-
-   
+            self.mask_files.append(os.path.join(folder_root,'labels_burned',os.path.basename(img_path)))
+            self.saveImag()

@@ -261,9 +261,10 @@ def pritnAccuracy(y_predic, y_val):
     cm = confusion_matrix(y_predic, y_val) 
     print("Accuracy of MLPClassifier : ", accuracyFromConfusionMatrix(cm)) 
 
-            ###########            
-            ### GIS ###
-            ###########
+           
+###########            
+### GIS ###
+###########
 
 def makePredictionToImportAsSHP(model, x_test, y_test, targetColName):
     '''
@@ -284,6 +285,26 @@ def makePredictionToImportAsSHP(model, x_test, y_test, targetColName):
     ds_toSHP['prediction'] = y_hay
     return ds_toSHP
 
+def reshape_as_image(arr):
+    '''
+    From GDL
+    Parameters
+    ----------
+    arr : arr as image in raster order (bands, rows, columns)
+    return: array-like in the image form of (rows, columns, bands)
+    '''       
+    return np.ma.transpose(arr, [1, 2, 0])
+
+def reshape_as_raster(arr):
+    '''  
+    From GDL
+        swap the axes order from (rows, columns, bands) to (bands, rows, columns)
+    Parameters
+    ----------
+    arr : array-like in the image form of (rows, columns, bands)
+    return: arr as image in raster order (bands, rows, columns)
+    '''
+    return np.transpose(arr, [2, 0, 1])
 
 ## From here on NOT READY !!!
 def clipRasterWithPoligon(rastPath, polygonPath,outputPath):
