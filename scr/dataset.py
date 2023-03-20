@@ -28,7 +28,7 @@ class customDataSet(Dataset):
         img_path = self.img_list[index]
         mask_path = self.mask_list[index]
         ## To Try:
-        img = rio.rasterio_loader(img_path)
+        # img = rio.rasterio_loader(img_path)
         
         with rio.open(img_path, 'r') as sat_handle:
             img = U.reshape_as_image(sat_handle.read())
@@ -49,6 +49,8 @@ class customDataloader(DataLoader):
         super(customDataloader, self).__init__()
         self.savePath = args.savepath
         self.dataset_purpose = args.datasetPurpous ### trn, val, tst
+        self.customDataloader = DataLoader(dataset,)
+
 
     def saveImag(imag):
         ## Save the image in self.savePath. Determine if we save tif with rasterio or png standard. 
