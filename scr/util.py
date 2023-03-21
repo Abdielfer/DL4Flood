@@ -6,6 +6,7 @@ import joblib
 import time
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from datetime import datetime
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.metrics import confusion_matrix
@@ -265,7 +266,16 @@ def pritnAccuracy(y_predic, y_val):
 ###########            
 ### GIS ###
 ###########
-
+def plotImageAndMask(img, mask):
+    # colList = ['Image','Mask']
+    fig, axs = plt.subplots(1,2, figsize=(10,5), sharey=True)
+    axs[0].imshow(img.numpy().squeeze(), cmap='Greys_r')
+    axs[0].set(xlabel= 'Image')
+    axs[1].imshow(mask.numpy().squeeze(), cmap='Greys_r')
+    axs[1].set(xlabel= 'Mask')
+    plt.rcParams['font.size'] = '15'
+    fig.tight_layout()
+     
 def makePredictionToImportAsSHP(model, x_test, y_test, targetColName):
     '''
     We asume here that x_test contain coordinates as <x_coord> and <y_coord>.
@@ -293,7 +303,7 @@ def reshape_as_image(arr):
     arr : arr as image in raster order (bands, rows, columns)
     return: array-like in the image form of (rows, columns, bands)
     '''       
-    return np.ma.transpose(arr, [1, 2, 0])
+    return np.ma.transpose(arr, [1, 2, 0]).astype('float32')
 
 def reshape_as_raster(arr):
     '''  
@@ -312,7 +322,7 @@ def saveImag(pathToSave, imag):
     pass
     
 
-## From here on NOT READY !!!
+## From hereon NOT READY !!!
 def clipRasterWithPoligon(rastPath, polygonPath,outputPath):
     '''
     Clip a raster (*.GTiff) with a single polygon feature 
