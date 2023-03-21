@@ -1,6 +1,7 @@
 import os
 import csv
 import numpy as np
+import torch
 from torch.utils.data import Dataset, DataLoader
 from torchgeo.datasets import RasterDataset, unbind_samples, stack_samples
 import torchvision.transforms as transforms
@@ -33,23 +34,20 @@ class customDataSet(Dataset):
     def __getitem__(self, index):
         img_path = self.img_list[index]
         mask_path = self.mask_list[index]
-        # print("img_path", img_path)
-        # print("mask_path", mask_path)
-        # print('________')
         with rio.open(img_path, 'r') as image:
-            img = U.reshape_as_image(image.read())
-            # print('Este es el DATASET', img.shape)
-            #  metadata = sat_handle.meta
+            img = image.read()
+            print('img shape at read time', img.shape)
         with rio.open(mask_path, 'r') as label:
-            mask = U.reshape_as_image(label.read())
-            # mask = mask[..., 0] 
-
-        # # item = [img, mask]
+            mask = label.read()
+            print('mask shape at read time', mask.shape)
+        
         if self.inLineTransformation:
             img, mask = self.__inlineTranformation__(img,mask)
-        if self.offLineTransformation:
-            img, mask = self.__offlineTransformation__(img, mask)
         
+        img = imageToTensor(img)
+        print('img shape at dataLoader delivery time', img.shape)
+        mask = imageToTensor(mask, 'int64')
+        print('mask shape at dataLoader delivery time', mask.shape)
         return img, mask
 
     def _VerifyListsContent(sefl):
@@ -116,11 +114,17 @@ class customDataloader(DataLoader):
 
 
 
-## Helper functions  
+## Helper functions 
+ 
+def imageToTensor(img,DTYPE:str = 'float32'):
+    imagTensor = np.nan_to_num(img, copy=False).astype(DTYPE)
+    # imagTensor = np.transpose(imagTensor, (2, 0, 1)).astype(DTYPE)
+    imagTensor = torch.from_numpy(imagTensor)
+    return imagTensor
+
 def createTransformation(*args):
     '''
     TODO: Try to create the transformations from a dictionary
-    
     '''
     tranformation = []
     for i in args:

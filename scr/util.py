@@ -7,6 +7,7 @@ import time
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import torch
 from datetime import datetime
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.metrics import confusion_matrix
@@ -268,8 +269,12 @@ def pritnAccuracy(y_predic, y_val):
 ###########
 def plotImageAndMask(img, mask):
     # colList = ['Image','Mask']
+    if torch.is_tensor(img):
+        image = img.detach().numpy()
+    else: 
+        image = img.numpy().squeeze()
     fig, axs = plt.subplots(1,2, figsize=(10,5), sharey=True)
-    axs[0].imshow(img.numpy().squeeze(), cmap='Greys_r')
+    axs[0].imshow(image, cmap='Greys_r')
     axs[0].set(xlabel= 'Image')
     axs[1].imshow(mask.numpy().squeeze(), cmap='Greys_r')
     axs[1].set(xlabel= 'Mask')
