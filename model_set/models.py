@@ -1,5 +1,5 @@
 import torch
-from utils import utils
+import scr.util as utils
 from torch import nn
 
 
@@ -43,13 +43,24 @@ class EncodingBlock(nn.Module):
         return output
 
 
+class Interpolate(torch.nn.Module):
+    def __init__(self, mode, scale_factor):
+        super(Interpolate, self).__init__()
+        self.interp = torch.nn.functional.interpolate
+        self.scale_factor = scale_factor
+        self.mode = mode
+
+    def forward(self, x):
+        x = self.interp(x, scale_factor=self.scale_factor, mode=self.mode, align_corners=False)
+        return x
+
 class DecodingBlock(nn.Module):
     """Module in the decoding section of the UNet"""
 
     def __init__(self, in_size, out_size, batch_norm=False, upsampling=True):
         super().__init__()
         if upsampling:
-            self.up = nn.Sequential(utils.Interpolate(mode='bilinear', scale_factor=2),
+            self.up = nn.Sequential(Interpolate(mode='bilinear', scale_factor=2),
                                     nn.Conv2d(in_size, out_size, kernel_size=1))
         else:
             self.up = nn.ConvTranspose2d(in_size, out_size, kernel_size=2, stride=2)
@@ -60,7 +71,20 @@ class DecodingBlock(nn.Module):
         output2 = self.up(input2)
         output1 = nn.functional.interpolate(input1, output2.size()[2:], mode='bilinear', align_corners=True)
         return self.conv(torch.cat([output1, output2], 1))
+'''
+class Upsample(nn.Module):
+    def __init__(self, size=None, scale_factor=None, mode='nearest', align_corners=False):
+        super(Upsample, self).__init__()
+        self.align_corners = align_corners
+        self.mode = mode
+        self.scale_factor = scale_factor
+        self.size = size
 
+    def forward(self, x):
+        return nn.functional.interpolate(x, size=self.size, scale_factor=self.scale_factor, mode=self.mode,
+                                         align_corners=self.align_corners)
+
+'''
 
 class UNetFlood(nn.Module):
     """Main UNet architecture
@@ -92,6 +116,7 @@ class UNetFlood(nn.Module):
 
     def forward(self, input_data):
         conv1 = self.conv1(input_data)
+        print('conv1', conv1.shape)
         maxpool1 = self.maxpool1(conv1)
         conv2 = self.conv2(maxpool1)
         maxpool2 = self.maxpool2(conv2)
@@ -110,3 +135,4 @@ class UNetFlood(nn.Module):
         final = nn.functional.interpolate(self.final(decode1), input_data.size()[2:], mode='bilinear', align_corners=True)
 
         return final
+
