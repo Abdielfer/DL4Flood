@@ -115,26 +115,41 @@ class UNetFlood(nn.Module):
         self.final = nn.Conv2d(64, classes, kernel_size=1)
 
     def forward(self, input_data):
+        print('Encoding______')
+        print('input_data', input_data.shape)
         conv1 = self.conv1(input_data)
+        print('conv1', conv1.shape)
         maxpool1 = self.maxpool1(conv1)
+        print('maxpool1', maxpool1.shape)
         conv2 = self.conv2(maxpool1)
+        print('conv2', conv2.shape)
         maxpool2 = self.maxpool2(conv2)
+        print('maxpool2', maxpool2.shape)
         conv3 = self.conv3(maxpool2)
+        print('conv3', conv3.shape)
         maxpool3 = self.maxpool3(conv3)
+        print('maxpool3', maxpool3.shape)
         conv4 = self.conv4(maxpool3)
+        print('conv4', conv4.shape)
         maxpool4 = self.maxpool4(conv4)
         print('maxpool4', maxpool4.shape)
-
+        print('center ______')
         center = self.center(maxpool4)
-
+        print('center', center.shape)
+        print('Decoding______')
         decode4 = self.decode4(conv4, center)
+        print('decode4 shape', decode4.shape)
         decode3 = self.decode3(conv3, decode4)
+        print('decode3 shape', decode3.shape)
         decode2 = self.decode2(conv2, decode3)
+        print('decode2 shape', decode2.shape)
         decode1 = self.decode1(conv1, decode2)
-        print('decode1', decode1.shape)
-        print('decode2', decode2.shape)
-
+        print('decode1 shape', decode1.shape)
+        print('setting final ___')
+        selfFinal = self.final(decode1)
+        print('self.final(decode1) shape', selfFinal.shape)
+        print('input_data.size()[2:] shape', input_data.size()[2:])
         final = nn.functional.interpolate(self.final(decode1), input_data.size()[2:], mode='bilinear', align_corners=True)
-
+        print('Final shape after interpolating self.final(decode1), input_data.size()[2:]:', final.shape)
         return final
 

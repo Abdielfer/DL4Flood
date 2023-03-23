@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
+import rasterio as rio
 from datetime import datetime
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.metrics import confusion_matrix
@@ -30,7 +31,7 @@ def makeNameByTime():
     name = time.strftime("%y%m%d%H%M")
     return name
 
-## mode manipulation
+## Model manipulation
 def saveModel(estimator, id):
     name = id + ".pkl" 
     _ = joblib.dump(estimator, name, compress=9)
@@ -135,7 +136,7 @@ def makeBinary(dataset,targetColumn,classToKeep:int, replacerClassName:int):
 def importConfig():
     with open('./config.txt') as f:
         content = f.readlines()
-    print(content)    
+    # print(content)    
     return content
 
 def getLocalPath():
@@ -235,6 +236,18 @@ def splitFilenameAndExtention(file_path):
     name = fpath.stem
     return name, extention 
 
+def get_parenPath_name_ext(filePath):
+    '''
+    Ex: user/folther/file.txt
+    parentPath = pathlib.PurePath('/src/goo/scripts/main.py').parent 
+    parentPath => '/src/goo/scripts/'
+    parentPath: can be instantiated.
+         ex: parentPath[0] => '/src/goo/scripts/'; parentPath[1] => '/src/goo/', etc...
+    '''
+    parentPath = pathlib.PurePath(filePath).parent
+    name, ext = splitFilenameAndExtention(filePath)
+    return parentPath, name, ext
+
 def importDataSet(dataSetName, targetCol: str):
     '''
     Import datasets and return         
@@ -267,17 +280,15 @@ def pritnAccuracy(y_predic, y_val):
 ###########            
 ### GIS ###
 ###########
-def plotImageAndMask(img, mask):
+def plotImageAndMask(img, mask,imgName:str='Image', mskName: str= 'Mask'):
     # colList = ['Image','Mask']
-    if torch.is_tensor(img):
-        image = img.detach().numpy()
-    else: 
-        image = img.numpy().squeeze()
+    image = img.detach().numpy() if torch.is_tensor(img) else img.numpy().squeeze()
+    mask_squeezed = mask.detach().numpy() if torch.is_tensor(mask) else mask.numpy().squeeze()
     fig, axs = plt.subplots(1,2, figsize=(10,5), sharey=True)
     axs[0].imshow(image, cmap='Greys_r')
-    axs[0].set(xlabel= 'Image')
-    axs[1].imshow(mask.numpy().squeeze(), cmap='Greys_r')
-    axs[1].set(xlabel= 'Mask')
+    axs[0].set(xlabel= imgName)
+    axs[1].imshow(mask_squeezed, cmap='Greys_r')
+    axs[1].set(xlabel= mskName)
     plt.rcParams['font.size'] = '15'
     fig.tight_layout()
      
@@ -300,6 +311,12 @@ def makePredictionToImportAsSHP(model, x_test, y_test, targetColName):
     ds_toSHP['prediction'] = y_hay
     return ds_toSHP
 
+def imageToTensor(img,DTYPE:str = 'float32'):
+    imagTensor = np.nan_to_num(img, copy=False).astype(DTYPE)
+    # imagTensor = np.transpose(imagTensor, (2, 0, 1)).astype(DTYPE)
+    imagTensor = torch.from_numpy(imagTensor)
+    return imagTensor
+
 def reshape_as_image(arr):
     '''
     From GDL
@@ -320,6 +337,47 @@ def reshape_as_raster(arr):
     return: arr as image in raster order (bands, rows, columns)
     '''
     return np.transpose(arr, [2, 0, 1])
+
+def makePredictionRaster(rasterPath:os.path, model):
+    '''
+    Crete a raster prediction with the same metadata as the inputRaster.
+    params:
+     @input: rasterPath
+     @autput: 
+    '''
+    # Name and savePath creation
+    parentPath = getParentPath(rasterPath)
+    name, _ = splitFilenameAndExtention(rasterPath)
+    savePath = os.path.join(parentPath, (name+'_predicted.tif'))
+    # read raster
+    inRaster = rio.open(rasterPath, mode="r")
+    profile = inRaster.profile
+    rasterData = imageToTensor(inRaster.read())[None,:] # if model demand extra dimention
+    print('rasterData.shape into makePredictionRaster', rasterData.shape)
+    # model
+    y_hat = model(rasterData).detach().numpy()
+    print('y_hat', y_hat.shape)
+    rasterData = y_hat[0][0]
+    print('rasterData', rasterData.shape)
+    # Save raster
+    newRasterPath = createRaster(savePath,rasterData,profile)
+    return y_hat
+
+def createRaster(savePath:os.path, data:np.array, profile):
+    '''
+    parameter: 
+    @savePath: Most contain the file nale *name.tif
+    @data: np.array with shape (bands,H,W)
+    '''
+    bands = data.shape[0] if len(data.shape)>2 else 1
+    print('bands = ', bands, 'datsaShape', data.shape)
+    with rio.open(
+        savePath,
+        mode="w",
+        **profile
+        ) as new_dataset:
+        new_dataset.write(data, int(bands))
+    return savePath
 
 
 def saveImag(pathToSave, imag):

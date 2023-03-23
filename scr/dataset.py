@@ -36,18 +36,16 @@ class customDataSet(Dataset):
         mask_path = self.mask_list[index]
         with rio.open(img_path, 'r') as image:
             img = image.read()
-            print('img shape at read time', img.shape)
+            # print('img shape at read time', img.shape)
         with rio.open(mask_path, 'r') as label:
             mask = label.read()
-            print('mask shape at read time', mask.shape)
-        
+            # print('mask shape at read time', mask.shape) 
         if self.inLineTransformation:
             img, mask = self.__inlineTranformation__(img,mask)
-        
-        img = imageToTensor(img)
-        print('img shape at dataLoader delivery time', img.shape)
-        mask = imageToTensor(mask, 'int64')
-        print('mask shape at dataLoader delivery time', mask.shape)
+        img = U.imageToTensor(img)
+        # print('img shape at dataLoader delivery time', img.shape)
+        mask = U.imageToTensor(mask, 'int64')
+        # print('mask shape at dataLoader delivery time', mask.shape)
         return img, mask
 
     def _VerifyListsContent(sefl):
@@ -58,15 +56,15 @@ class customDataSet(Dataset):
 
     def __inlineTranformation__(self,imag,mask):
         '''
-          inline transformation. We can keep adding more transformations as needed. 
+          inline transformation. 
+          We can keep adding more transformations as needed. 
         '''
-        # imag = U.reshape_as_image(imag)
-        # mask = U.reshape_as_image(mask)
-        # transform.rotate
+        # rotation 90deg
         if random.random() > 0.5:
             imag = transform.rotate(imag,90,preserve_range=True)
             mask = transform.rotate(mask, 90,preserve_range=True)
         
+        # h_flip
         if random.random() > 0.5:
             imag = np.ascontiguousarray(imag[:, ::-1, ...])
             mask = np.ascontiguousarray(mask[:, ::-1, ...])
@@ -116,12 +114,6 @@ class customDataloader(DataLoader):
 
 ## Helper functions 
  
-def imageToTensor(img,DTYPE:str = 'float32'):
-    imagTensor = np.nan_to_num(img, copy=False).astype(DTYPE)
-    # imagTensor = np.transpose(imagTensor, (2, 0, 1)).astype(DTYPE)
-    imagTensor = torch.from_numpy(imagTensor)
-    return imagTensor
-
 def createTransformation(*args):
     '''
     TODO: Try to create the transformations from a dictionary
