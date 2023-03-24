@@ -9,16 +9,15 @@ import torch
 import matplotlib.pyplot as plt
 import dataLoader as DL
 from torch.utils.tensorboard import SummaryWriter
-from losses import iou_binary
 
 plt.style.use('fivethirtyeight')
 
 class train_Models(object):
-    def __init__(self, model, loss_fn, optimizer, metric: iou_binary):
+    def __init__(self, model, loss_fn, optimizer, metric):
         self.model = model
         self.loss_fn = loss_fn
         self.optimizer = optimizer
-        self.metric = metric
+        self.metric_fn = metric
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model.to(self.device)
         self.train_loader = None
@@ -26,7 +25,7 @@ class train_Models(object):
         self.writer = None
         self.losses = []
         self.val_losses = []
-        self.val_metric = []  
+        self.val_metrics = []  
         self.total_epochs = 0
         self.train_step_fn = self._make_train_step_fn()
         self.val_step_fn = self._make_val_step_fn()
@@ -54,8 +53,7 @@ class train_Models(object):
             self.model.eval()
             yhat = self.model(x)
             loss = self.loss_fn(yhat, y)
-            metric = self.metric(yhat, y)
-            return loss.item(), metric
+            return loss.item()
         
         return perform_val_step_fn
             
@@ -86,7 +84,7 @@ class train_Models(object):
         loss = np.mean(mini_batch_losses)
         return loss
 
-    def _computeMetricMiniBatch(self, data_loader, step_fn):
+    def _computeMetricMiniBatch(self, data_loader):
         '''
         Return de mean per batch of the metric in self.metric
         '''
@@ -94,7 +92,7 @@ class train_Models(object):
         for x_batch, y_batch in data_loader:
             x_batch = x_batch.to(self.device)
             y_batch = y_batch.to(self.device)
-            metric = step_fn(x_batch, y_batch)
+            metric = self.metric_fn(x_batch, y_batch)
             miniBathcMetric.append(metric)
 
         metricValue = np.mean(miniBathcMetric)
@@ -111,8 +109,8 @@ class train_Models(object):
                 # Performs evaluation using mini-batches
                 val_loss = self._trainMiniBatch(validation=True)
                 self.val_losses.append(val_loss)
-                metric = self._computeMetricMiniBatch(self.val_loader,self.val_step_fn)
-                self.val_metric.append(metric)
+                metric = self._computeMetricMiniBatch(self.val_loader)
+                self.val_metrics.append(metric)
 
             # If a SummaryWriter has been set...
             if self.writer:
@@ -126,8 +124,7 @@ class train_Models(object):
                                         global_step=epoch)
                 self.writer.add_scalars(main_tag='metric',
                                         tag_scalar_dict=metricSaclar,
-                                        global_step=epoch)
-                
+                                        global_step=epoch)  
 
         if self.writer:
             # Closes the writer
@@ -139,7 +136,9 @@ class train_Models(object):
                       'model_state_dict': self.model.state_dict(),
                       'optimizer_state_dict': self.optimizer.state_dict(),
                       'loss': self.losses,
-                      'val_loss': self.val_losses}
+                      'val_loss': self.val_losses,
+                      'validation_metric': self.val_metrics}
+        
         torch.save(checkpoint, filename)
 
     def load_checkpoint(self, filename):
