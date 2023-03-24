@@ -12,7 +12,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 plt.style.use('fivethirtyeight')
 
-class train_Models(object):
+class models_trainer(object):
     def __init__(self, model, loss_fn, optimizer, metric):
         self.model = model
         self.loss_fn = loss_fn
@@ -36,7 +36,6 @@ class train_Models(object):
 
 
     def _make_train_step_fn(self):
-       
         def perform_train_step_fn(x, y):
             self.model.train()
             yhat = self.model(x)
@@ -102,15 +101,19 @@ class train_Models(object):
         self.set_seed(seed)
 
         for epoch in range(n_epochs):
+            print(f"Epoch {epoch} ........ ->")
             self.total_epochs += 1
             loss = self._trainMiniBatch(validation=False)
+            print(f"train Loss = {loss}")
             self.losses.append(loss)
             with torch.no_grad():
                 # Performs evaluation using mini-batches
                 val_loss = self._trainMiniBatch(validation=True)
+                print(f"val Loss = {val_loss}")
                 self.val_losses.append(val_loss)
                 metric = self._computeMetricMiniBatch(self.val_loader)
                 self.val_metrics.append(metric)
+                print(f"IoU per minibatch = {metric}")
 
             # If a SummaryWriter has been set...
             if self.writer:
