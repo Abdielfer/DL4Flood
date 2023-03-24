@@ -6,7 +6,6 @@ From: https://github.com/bermanmaxim/LovaszSoftmax/blob/master/pytorch/lovasz_lo
 """
 
 from __future__ import print_function, division
-
 import torch
 from torch.autograd import Variable
 import torch.nn.functional as F
@@ -32,7 +31,7 @@ def lovasz_grad(gt_sorted):
     return jaccard
 
 
-def iou_binary(preds, labels, EMPTY=1., ignore=None, per_image=True):
+def iou_binary(preds, labels, EMPTY=0., ignore=None, per_image=True):
     """
     IoU for foreground class
     binary: 1 foreground, 0 background
@@ -57,7 +56,7 @@ def iou(preds, labels, C, EMPTY=1., ignore=None, per_image=False):
     Array of IoU for each (non ignored) class
     """
     if not per_image:
-        preds, labels = (preds,), (labels,)
+        preds, labels = (preds,),         
     ious = []
     for pred, label in zip(preds, labels):
         iou = []    
@@ -106,7 +105,7 @@ def lovasz_hinge_flat(logits, labels):
     signs = 2. * labels.float() - 1.
     errors = (1. - logits * Variable(signs))
     errors_sorted, perm = torch.sort(errors, dim=0, descending=True)
-    perm = perm.data
+    perm = perm.data  ## perm: are the index in the original erros tensor. Is used to sorte the ground truth in the next line
     gt_sorted = labels[perm]
     grad = lovasz_grad(gt_sorted)
     loss = torch.dot(F.relu(errors_sorted), Variable(grad))

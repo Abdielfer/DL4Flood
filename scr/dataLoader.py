@@ -15,8 +15,8 @@ class customDataSet(Dataset):
     def __init__(self, imgMaskList:os.path, inLineTransformation = False, offLineTransformation = False):
         super(Dataset, self).__init__()
         self.imgMaskList = imgMaskList
-        self.inLineTransformation = True 
-        self.offLineTransformation = False
+        self.inLineTransformation = inLineTransformation
+        self.offLineTransformation = offLineTransformation
         self.img_list = []
         self.mask_list = []
 
@@ -48,7 +48,7 @@ class customDataSet(Dataset):
         # print('mask shape at dataLoader delivery time', mask.shape)
         return img, mask
 
-    def _VerifyListsContent(sefl):
+    def _VerifyListsContent(sefl):  ## TODO 
         '''
         verify if imag_list and mask_list have same len and names(img-mask) matchs. 
         '''
@@ -71,7 +71,7 @@ class customDataSet(Dataset):
 
         return imag,mask
        
-    def __offlineTransformation__(self, savePath, imag, mask):
+    def __offlineTransformation__(self, ImagSavePath, maskSavePath,imag, mask):
         '''
         Perform some transformation and save transformed <img> and <mask> in <savePath>.
         '''
@@ -80,8 +80,8 @@ class customDataSet(Dataset):
         mask = transform.rotate(mask, 180, preserve_range=True)
         
         # Save
-        U.saveImag(savePath, img)
-        U.saveImag(savePath, mask)
+        U.saveImag(ImagSavePath, img)
+        U.saveImag(maskSavePath, mask)
         
 
     
@@ -113,7 +113,8 @@ class customDataloader(DataLoader):
 
 
 ## Helper functions 
- 
+
+# "on Going code, not ready yet"
 def createTransformation(*args):
     '''
     TODO: Try to create the transformations from a dictionary
