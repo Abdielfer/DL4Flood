@@ -76,7 +76,7 @@ def iou(preds, labels, C, EMPTY=1., ignore=None, per_image=False):
 # --------------------------- BINARY LOSSES ---------------------------
 
 
-def lovasz_hinge(logits, labels, per_image=True, ignore=None):
+def lovasz_hinge(logits, labels, per_image=False, ignore=None):
     """
     Binary Lovasz hinge loss
       logits: [B, H, W] Variable, logits at each pixel (between -\infty and +\infty)

@@ -91,7 +91,10 @@ class models_trainer(object):
         for x_batch, y_batch in data_loader:
             x_batch = x_batch.to(self.device)
             y_batch = y_batch.to(self.device)
-            metric = self.metric_fn(x_batch, y_batch)
+            if self.metric_fn == 'iou_binary':
+                metric = self.metric_fn(x_batch, y_batch, per_image=False)
+            else:
+                metric = self.metric_fn(x_batch, y_batch)
             miniBathcMetric.append(metric)
 
         metricValue = np.mean(miniBathcMetric)

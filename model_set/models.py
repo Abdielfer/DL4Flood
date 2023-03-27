@@ -153,5 +153,5 @@ class UNetFlood(nn.Module):
         final = nn.functional.interpolate(self.final(decode1), input_data.size()[2:], mode='bilinear', align_corners=True)
         # print('Final shape after interpolating self.final(decode1), input_data.size()[2:]:', final.shape)
         
-        return sigmoid(final)
+        return final
 
