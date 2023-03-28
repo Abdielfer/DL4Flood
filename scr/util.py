@@ -338,7 +338,7 @@ def reshape_as_raster(arr):
     '''
     return np.transpose(arr, [2, 0, 1])
 
-def makePredictionRaster(rasterPath:os.path, model):
+def makePredictionRaster(rasterPath:os.path, model, saveRaster:bool=False):
     '''
     Crete a raster prediction with the same metadata as the inputRaster.
     params:
@@ -346,22 +346,22 @@ def makePredictionRaster(rasterPath:os.path, model):
      @autput: 
     '''
     # Name and savePath creation
-    parentPath = getParentPath(rasterPath)
-    name, _ = splitFilenameAndExtention(rasterPath)
+    parentPath,name,_ = get_parenPath_name_ext(rasterPath)
     savePath = os.path.join(parentPath, (name+'_predicted.tif'))
     # read raster
-    inRaster = rio.open(rasterPath, mode="r")
-    profile = inRaster.profile
-    rasterData = imageToTensor(inRaster.read())[None,:] # if model demand extra dimention
+    data, profile = readRaster(rasterPath)
+    print(profile)
+    rasterData = imageToTensor(data)[None,:] # if model demand extra dimention
     print('rasterData.shape into makePredictionRaster', rasterData.shape)
     # model
+    model.eval()
     y_hat = model(rasterData).detach().numpy()
-    print('y_hat', y_hat.shape)
     rasterData = y_hat[0][0]
-    print('rasterData', rasterData.shape)
+    model.train()
     # Save raster
-    newRasterPath = createRaster(savePath,rasterData,profile)
-    return y_hat
+    if saveRaster:
+        createRaster(savePath,rasterData, profile)    
+    return y_hat[0]  #remouve the extra dimention added to pass through the model. 
 
 def createRaster(savePath:os.path, data:np.array, profile):
     '''
@@ -379,9 +379,20 @@ def createRaster(savePath:os.path, data:np.array, profile):
         new_dataset.write(data, int(bands))
     return savePath
 
+def readRaster(rasterPath):
+    '''
+    Read a raster qith Rasterio.
+    return:
+     Raster data as np.array
+     Raster.profile: dictionary with all rater information
+    '''
+    inRaster = rio.open(rasterPath, mode="r")
+    profile = inRaster.profile
+    rasterData = inRaster.read()
+    return rasterData, profile
 
 def saveImag(pathToSave, imag):
-    ## Save the image in self.savePath. Determine if we save tif with rasterio or png standard. 
+    ## TODO: Save the image in self.savePath. Determine if we save tif with rasterio or png standard. 
     pass
     
 

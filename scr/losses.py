@@ -31,7 +31,7 @@ def lovasz_grad(gt_sorted):
     return jaccard
 
 
-def iou_binary(preds, labels, EMPTY=1., ignore=None, per_image=True):
+def iou_binary(preds, labels, EMPTY=0., ignore=None, per_image=False):
     """
     IoU for foreground class
     binary: 1 foreground, 0 background
@@ -47,6 +47,7 @@ def iou_binary(preds, labels, EMPTY=1., ignore=None, per_image=True):
         else:
             iou = float(intersection) / float(union)
         ious.append(iou)
+    print(ious)
     iou = mean(ious)    # mean accross images if per_image
     return 100 * iou
 
