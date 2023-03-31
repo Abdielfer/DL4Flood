@@ -7,7 +7,7 @@ from torchgeo.datasets import RasterDataset, unbind_samples, stack_samples
 import torchvision.transforms as transforms
 from skimage import transform
 from torchvision.transforms import functional as TF
-import util as U
+from scr import util as U
 import rasterio as rio
 import random
 

@@ -7,7 +7,7 @@ import numpy as np
 import datetime
 import torch
 import matplotlib.pyplot as plt
-import dataLoader as DL
+from scr import dataLoader as DL
 from torch.utils.tensorboard import SummaryWriter
 
 plt.style.use('fivethirtyeight')
