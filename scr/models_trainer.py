@@ -43,17 +43,19 @@ class models_trainer(object):
             loss = self.loss_fn(yhat, y)
             loss.backward()
             self.optimizer.step()
-            return loss.item()
+            item  = loss.item()
+            print(f"Training loss {item}")
+            return item
         return perform_train_step_fn
     
     def _make_val_step_fn(self):
-      
         def perform_val_step_fn(x, y):
             self.model.eval()
             yhat = self.model(x)
             loss = self.loss_fn(yhat, y)
-            return loss.item()
-        
+            item  = loss.item()
+            print(f"Validation loss {item}")
+            return item
         return perform_val_step_fn
             
     def _trainMiniBatch(self, validation=False):
@@ -72,11 +74,11 @@ class models_trainer(object):
 
         if data_loader is None:
             return None
-       
+    
         mini_batch_losses = []
         for x_batch, y_batch in data_loader:
             x_batch = x_batch.to(self.device)
-            y_batch = y_batch.to(self.device)
+            y_batch = y_batch.to(self.device).float()   ## Add .float() to avoid type conflict
             mini_batch_loss = step_fn(x_batch, y_batch)
             mini_batch_losses.append(mini_batch_loss)
 
@@ -86,15 +88,21 @@ class models_trainer(object):
     def _computeMetricMiniBatch(self, data_loader):
         '''
         Return de mean per batch of the metric in self.metric
-        '''
-        miniBathcMetric = []
-        for x_batch, y_batch in data_loader:
-            x_batch = x_batch.to(self.device)
-            y_batch = y_batch.to(self.device)
-            metric = self.metric_fn(x_batch, y_batch)
-            miniBathcMetric.append(metric)
+        
 
-        metricValue = np.mean(miniBathcMetric)
+        '''
+        metrics = {}
+        for metric in self.metric_fn:
+            print(f"Actual metric {metric}")
+            miniBathcMetric = []
+            for x_batch, y_batch in data_loader:
+                x_batch = x_batch.to(self.device)
+                y_batch = y_batch.to(self.device)
+                ItemMetric = metric(x_batch, y_batch)
+                miniBathcMetric.append(ItemMetric)
+
+            metricValue = np.mean(miniBathcMetric)
+            metrics[str(metric)] = metricValue 
         return metricValue
 
     def train(self, n_epochs, seed=42):
@@ -113,7 +121,7 @@ class models_trainer(object):
                 self.val_losses.append(val_loss)
                 metric = self._computeMetricMiniBatch(self.val_loader)
                 self.val_metrics.append(metric)
-                print(f"IoU per minibatch = {metric}")
+                print(f"Metric(s) per minibatch = {metric}")
 
             # If a SummaryWriter has been set...
             if self.writer:

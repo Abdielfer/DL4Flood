@@ -9,6 +9,7 @@ from __future__ import print_function, division
 import torch
 from torch.autograd import Variable
 import torch.nn.functional as F
+from torcheval.metrics import BinaryAccuracy
 import numpy as np
 try:
     from itertools import  ifilterfalse
@@ -47,7 +48,6 @@ def iou_binary(preds, labels, EMPTY=0., ignore=None, per_image=False):
         else:
             iou = float(intersection) / float(union)
         ious.append(iou)
-    print(ious)
     iou = mean(ious)    # mean accross images if per_image
     return 100 * iou
 
@@ -126,6 +126,16 @@ def flatten_binary_scores(scores, labels, ignore=None):
     vscores = scores[valid]
     vlabels = labels[valid]
     return vscores, vlabels
+
+def binaryAccuracy(pred, label, threshold: float =0.7):
+    '''
+    Compute binary accuracy in tensors. 
+    There are few interesting attributes in the class, see ref. 
+    ref:  https://pytorch.org/torcheval/main/generated/torcheval.metrics.BinaryAccuracy.html
+    '''
+    metric = BinaryAccuracy(threshold)
+    metric.update(pred, label)
+    return metric.compute()
 
 
 class StableBCELoss(torch.nn.modules.Module):
