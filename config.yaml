@@ -1,0 +1,21 @@
+defaults:
+  - model: gdl_unet
+  - loss: binary/softbce
+  - optimizer: adamw
+  - scheduler: plateau
+  - hydra: default
+  - override hydra/hydra_logging: colorlog # enable color logging to make it pretty
+  - override hydra/job_logging: colorlog # enable color logging to make it pretty
+  - _self_
+
+general:
+  work_dir: ${hydra:runtime.cwd}  # where the code is executed
+  config_name: ${hydra:job.config_name}
+  config_override_dirname: ${hydra:job.override_dirname}
+  config_path: ${hydra:runtime.config_sources}
+  project_name: template_project
+  workspace: your_name
+  max_epochs: 2 # for train only
+  save_model_path: saved_model/${general.project_name}
+
+
