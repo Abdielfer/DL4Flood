@@ -9,6 +9,7 @@ defaults:
   - _self_
 
 general:
+  
   work_dir: ${hydra:runtime.cwd}  # where the code is executed
   config_name: ${hydra:job.config_name}
   config_override_dirname: ${hydra:job.override_dirname}
