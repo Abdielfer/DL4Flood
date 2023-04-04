@@ -9,7 +9,7 @@ from __future__ import print_function, division
 import torch
 from torch.autograd import Variable
 import torch.nn.functional as F
-from torcheval.metrics import BinaryAccuracy
+from torcheval.metrics.functional import binary_accuracy
 import numpy as np
 try:
     from itertools import  ifilterfalse
@@ -52,7 +52,7 @@ def iou_binary(preds, labels, EMPTY=0., ignore=None, per_image=False):
     return 100 * iou
 
 
-def iou(preds, labels, C, EMPTY=1., ignore=None, per_image=False):
+def iou(preds, labels, C:int = 1, EMPTY=1., ignore=None, per_image=False):
     """
     Array of IoU for each (non ignored) class
     """
@@ -127,16 +127,39 @@ def flatten_binary_scores(scores, labels, ignore=None):
     vlabels = labels[valid]
     return vscores, vlabels
 
-def binaryAccuracy(pred, label, threshold: float =0.7):
-    '''
-    Compute binary accuracy in tensors. 
-    There are few interesting attributes in the class, see ref. 
-    ref:  https://pytorch.org/torcheval/main/generated/torcheval.metrics.BinaryAccuracy.html
-    '''
-    metric = BinaryAccuracy(threshold)
-    metric.update(pred, label)
-    return metric.compute()
 
+class BinaryAccuracy():
+    def __init__(self, pred, label, threshold: float =0.7) -> None:
+        self.pred = pred
+        self.label = label
+        self.threshold = threshold 
+        pass 
+    
+    def fordwar(self) -> float: 
+        return self.binaryAccuracy(self.pred,self.label,threshold = self.threshold)
+    
+    def binaryAccuracy(self, pred, label, threshold:float = 0.7)  -> float:
+        '''
+        Compute binary accuracy in tensors. 
+        There are few interesting attributes in the class, see ref. 
+        ref:  https://pytorch.org/torcheval/main/generated/torcheval.metrics.BinaryAccuracy.html
+        '''
+        metric = BinaryAccuracy(threshold = threshold)
+        metric.update(pred, label)
+        ans = metric.compute().numpy()[0]
+        print(ans)
+        return ans
+
+def binaryAccuracy( pred, label, threshold:float = 0.7)  -> float:
+        '''
+        Compute binary accuracy in tensors.
+        Expected tensot of size [batch,C,H,W] 
+        There are few interesting attributes in the class, see ref. 
+        ref:  https://pytorch.org/torcheval/main/generated/torcheval.metrics.BinaryAccuracy.html
+        '''
+        acc = binary_accuracy(torch.flatten(pred), torch.flatten(label), threshold = threshold)
+        print(f"acc {acc}")
+        return acc
 
 class StableBCELoss(torch.nn.modules.Module):
     def __init__(self):

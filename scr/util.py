@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 import rasterio as rio
+from rasterio.plot import show_hist
 from datetime import datetime
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.metrics import confusion_matrix
@@ -391,10 +392,17 @@ def readRaster(rasterPath):
     rasterData = inRaster.read()
     return rasterData, profile
 
+def plotHistogram(raster, bins: int=50, bandNumber: int = 1):
+    show_hist(source=raster, bins=bins, title= f"Histogram of {bandNumber} bands", 
+          histtype='stepfilled', alpha=0.5)
+    return True
+
 def saveImag(pathToSave, imag):
     ## TODO: Save the image in self.savePath. Determine if we save tif with rasterio or png standard. 
     pass
     
+
+
 
 ## From hereon NOT READY !!!
 def clipRasterWithPoligon(rastPath, polygonPath,outputPath):

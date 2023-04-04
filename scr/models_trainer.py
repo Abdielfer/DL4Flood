@@ -44,7 +44,7 @@ class models_trainer(object):
             loss.backward()
             self.optimizer.step()
             item  = loss.item()
-            print(f"Training loss {item}")
+           # print(f"Training loss {item}")
             return item
         return perform_train_step_fn
     
@@ -54,7 +54,7 @@ class models_trainer(object):
             yhat = self.model(x)
             loss = self.loss_fn(yhat, y)
             item  = loss.item()
-            print(f"Validation loss {item}")
+            #print(f"Validation loss {item}")
             return item
         return perform_val_step_fn
             
@@ -87,23 +87,22 @@ class models_trainer(object):
 
     def _computeMetricMiniBatch(self, data_loader):
         '''
-        Return de mean per batch of the metric in self.metric
-        
-
+        Return de mean per batch of the metric in self.metric  
         '''
         metrics = {}
-        for metric in self.metric_fn:
-            print(f"Actual metric {metric}")
-            miniBathcMetric = []
-            for x_batch, y_batch in data_loader:
-                x_batch = x_batch.to(self.device)
-                y_batch = y_batch.to(self.device)
-                ItemMetric = metric(x_batch, y_batch)
-                miniBathcMetric.append(ItemMetric)
+        print(f"Actual metric {self.metric_fn}")
+        miniBathcMetric = []
+        for x_batch, y_batch in data_loader:
+            x_batch = x_batch.to(self.device)
+            y_batch = y_batch.to(self.device)
+            ItemMetric = self.metric_fn(x_batch[0][0], y_batch[0][0])
+            print(f"ItemMetric : {ItemMetric}")
+            miniBathcMetric.append(ItemMetric)
+        print(f"miniBathcMetric : {miniBathcMetric} ")
+        metricMean = np.mean(miniBathcMetric)
+        metrics[str(self.metric_fn)] = metricMean
+        return metricMean
 
-            metricValue = np.mean(miniBathcMetric)
-            metrics[str(metric)] = metricValue 
-        return metricValue
 
     def train(self, n_epochs, seed=42):
         self.set_seed(seed)
