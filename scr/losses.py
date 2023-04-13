@@ -31,7 +31,6 @@ def lovasz_grad(gt_sorted):
         jaccard[1:p] = jaccard[1:p] - jaccard[0:-1]
     return jaccard
 
-
 def iou_binary(preds, labels, EMPTY=0., ignore=None, per_image=False):
     """
     IoU for foreground class
@@ -128,37 +127,15 @@ def flatten_binary_scores(scores, labels, ignore=None):
     return vscores, vlabels
 
 
-class BinaryAccuracy():
-    def __init__(self, pred, label, threshold: float =0.7) -> None:
-        self.pred = pred
-        self.label = label
-        self.threshold = threshold 
-        pass 
-    
-    def fordwar(self) -> float: 
-        return self.binaryAccuracy(self.pred,self.label,threshold = self.threshold)
-    
-    def binaryAccuracy(self, pred, label, threshold:float = 0.7)  -> float:
-        '''
-        Compute binary accuracy in tensors. 
-        There are few interesting attributes in the class, see ref. 
-        ref:  https://pytorch.org/torcheval/main/generated/torcheval.metrics.BinaryAccuracy.html
-        '''
-        metric = BinaryAccuracy(threshold = threshold)
-        metric.update(pred, label)
-        ans = metric.compute().numpy()[0]
-        print(ans)
-        return ans
-
 def binaryAccuracy( pred, label, threshold:float = 0.7)  -> float:
         '''
-        Compute binary accuracy in tensors.
-        Expected tensot of size [batch,C,H,W] 
+        Compute binary accuracy in tensors of one dimention .
+        Expected tensot of size [H,W] (Only one channel to be flattened)
         There are few interesting attributes in the class, see ref. 
         ref:  https://pytorch.org/torcheval/main/generated/torcheval.metrics.BinaryAccuracy.html
         '''
         acc = binary_accuracy(torch.flatten(pred), torch.flatten(label), threshold = threshold)
-        print(f"acc {acc}")
+        # print(f"acc {acc}")
         return acc
 
 class StableBCELoss(torch.nn.modules.Module):
@@ -266,7 +243,7 @@ def isnan(x):
     
 def mean(l, ignore_nan=False, empty=0):
     """
-    nanmean compatible with generators.
+    nan_mean compatible with generators.
     """
     l = iter(l)
     if ignore_nan:

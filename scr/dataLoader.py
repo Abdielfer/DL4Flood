@@ -2,7 +2,7 @@ import os
 import csv
 import numpy as np
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader,random_split
 from torchgeo.datasets import RasterDataset, unbind_samples, stack_samples
 import torchvision.transforms as transforms
 from skimage import transform
@@ -12,21 +12,12 @@ import rasterio as rio
 import random
 
 class customDataSet(Dataset):
-    def __init__(self, imgMaskList:os.path, inLineTransformation = False, offLineTransformation = False):
+    def __init__(self, 
+                fullList:os.path,
+                inLineTransformation : bool = True):
         super(Dataset, self).__init__()
-        self.imgMaskList = imgMaskList
         self.inLineTransformation = inLineTransformation
-        self.offLineTransformation = offLineTransformation
-        self.img_list = []
-        self.mask_list = []
-
-        with open(self.imgMaskList, "r") as f:
-            reader = csv.reader(f, delimiter=";")
-            for _,line in enumerate(reader):
-                self.img_list.append(line[0])
-                self.mask_list.append(line[1])
-        if len(self.img_list)!= len(self.mask_list):
-            raise ValueError("Mismatch between the number of images and masks. You can run customDataSet._VerifyListsContent()")
+        self.img_list, self.mask_list = createImageMaskList(fullList)
 
     def __len__(self):
         return len(self.img_list)
@@ -68,52 +59,74 @@ class customDataSet(Dataset):
         if random.random() > 0.5:
             imag = np.ascontiguousarray(imag[:, ::-1, ...])
             mask = np.ascontiguousarray(mask[:, ::-1, ...])
-
         return imag,mask
-       
-    def __offlineTransformation__(self, ImagSavePath, maskSavePath,imag, mask):
-        '''
-        Perform some transformation and save transformed <img> and <mask> in <savePath>.
-        '''
+
+def createImageMaskList(imgMaskList:os.path):
+    '''
+    @imgMaskList: A *csv file containig a pair path of images and masks per line. 
+    '''
+    img_list = []
+    mask_list = []
+    with open(imgMaskList, "r") as f:
+        reader = csv.reader(f, delimiter=";")
+        for _,line in enumerate(reader):
+            img_list.append(line[0])
+            mask_list.append(line[1])
+    if len(img_list)!= len(mask_list):
+        raise ValueError("Mismatch between the number of images and masks. You can run customDataSet._VerifyListsContent()")
+    return img_list, mask_list 
+      
+def offlineTransformation(imgMaskList:os.path, ImagSavePath, maskSavePath):
+    '''
+    Perform permanent transformation to image-mask pair and save a transformed copy of <img> and <mask> in <savePath>.
+    The rotated image and mask are saved with the original raster profile for reference only. 
+    '''
+
+    img_list, mask_list = createImageMaskList(imgMaskList)
+
+    for i, m in zip(img_list,mask_list):
         ## Rotate 180deg
-        img = transform.rotate(imag, 180, preserve_range=True)
-        mask = transform.rotate(mask, 180, preserve_range=True)
-        
+        imgData,imaProfile = U.readRaster(i)
+        imgRotData = transform.rotate(imgData.copy_(), 180, preserve_range=True)
+        maskData, maskProfile = U.readRaster(m)
+        maskRotData = transform.rotate(maskData.copy_(), 180, preserve_range=True)
         # Save
-        U.saveImag(ImagSavePath, img)
-        U.saveImag(maskSavePath, mask)
-        
+        _,imgName,imgExt=U.get_parenPath_name_ext
+        imagePath = os.path.join(ImagSavePath,imgName+'trnaf'+imgExt)
+        U.createRaster(imagePath,imgRotData, imaProfile)
+        _,maskName,maskExt=U.get_parenPath_name_ext
+        maskPath = os.path.join(maskSavePath,maskName+'trnaf'+maskExt)
+        U.createRaster(maskPath, maskRotData, maskProfile)
 
-    
+
 # TODO : define *args type  ## 
-class customDataloader(DataLoader):
+def customDataloader(dataset:customDataSet, args:dict) -> DataLoader:
     '''
-    Custom DataLoader is useful if you want to pass arguments from config files to a DataLoader instance. 
-    For refferences:
-    DataLoader(dataset, batch_size=1, shuffle=False, sampler=None,
-           batch_sampler=None, num_workers=0, collate_fn=None,
-           pin_memory=False, drop_last=False, timeout=0,
-           worker_init_fn=None, *, prefetch_factor=2,
-           persistent_workers=False)
+    @args: Dic : {'batch_size': 1, 'num_workers': 1,'drop_last': True}
+    '''
+    customDL = DataLoader(dataset,
+                        batch_size = args['batch_size'],
+                        shuffle = False,
+                        num_workers = args['num_workers'],
+                        pin_memory = False, 
+                        drop_last = args['drop_last'],
+                        )
     
+    return customDL
+
+def splitDataset(dataset:customDataSet, proportions = [.7,.3] ,seed:int = 42, )-> customDataSet:
     '''
-    def __init__(self, dataset:customDataSet, args:dict):
-        super(DataLoader, self).__init__()
-        self.customDataloader = DataLoader(dataset, 
-                                           batch_size= args['batch_size'], 
-                                           shuffle=False,
-                                           num_workers= 1,
-                                           pin_memory=False, 
-                                           drop_last=True,
-                                           )
-   
-    def getDataloader(self):
-        return self.customDataloader
-
-
+    ref: https://pytorch.org/docs/stable/data.html# 
+    '''
+    len = dataset.__len__()
+    lengths = [int(p *len) for p in proportions]
+    lengths[-1] = len - sum(lengths[:-1])
+    generator = torch.Generator().manual_seed(seed)
+    train_CustomDS, val_CustomDS = random_split(dataset,lengths,generator=generator)
+    return train_CustomDS, val_CustomDS
+  
 
 ## Helper functions 
-
 # "on Going code, not ready yet"
 def createTransformation(*args):
     '''
