@@ -80,6 +80,8 @@ def offlineTransformation(imgMaskList:os.path, ImagSavePath, maskSavePath):
     '''
     Perform permanent transformation to image-mask pair and save a transformed copy of <img> and <mask> in <savePath>.
     The rotated image and mask are saved with the original raster profile for reference only. 
+    
+    @imgMaskList: A *csv file containig a pair path of images and masks per line.
     '''
 
     img_list, mask_list = createImageMaskList(imgMaskList)
