@@ -28,7 +28,7 @@ class timeit():
     def __exit__(self, *args, **kwargs):
         print('runtime: {}'.format(datetime.now() - self.tic))
 
-def makeNameByTime():
+def makeNameByTime()->str:
     name = time.strftime("%y%m%d%H%M")
     return name
 
@@ -147,21 +147,43 @@ def makePath(str1,str2):
     return os.path.join(str1,str2)
 
 def ensureDirectory(pathToCheck):
-    if os.path.isdir(pathToCheck): 
-        return pathToCheck
-    else:
+    if not os.path.isdir(pathToCheck): 
         os.mkdir(pathToCheck)
         print(f"Confirmed directory at: {pathToCheck} ")
         return pathToCheck
 
 def relocateFile(inputFilePath, outputFilePath):
     '''
-    NOTE: @outputFilePath ust contain the complete filename
+    NOTE: @outputFilePath must contain the complete filename
     Sintax:
      @shutil.move("path/to/current/file.foo", "path/to/new/destination/for/file.foo")
     '''
     shutil.move(inputFilePath, outputFilePath)
     return True
+
+def makeFileCopy(inputFilePath, outputFilePath):
+    try:
+        shutil.copy(inputFilePath, outputFilePath)
+        return True
+    except shutil.SameFileError:
+        print("Source and destination represents the same file.")
+        return False
+    except PermissionError:
+        print("Permission denied.")
+        return False
+    except:
+        print("Error occurred while copying file.")
+        return False
+
+def removeFile(filePath):
+    try:
+        os.remove(filePath)
+        return True
+    except OSError as error:
+        print(error)
+        print("File path can not be removed")
+        return False
+
 
 def createTransitFolder(parent_dir_path):
     path = os.path.join(parent_dir_path, 'TransitDir')
@@ -202,20 +224,21 @@ def listALLFilesInDirByExt(cwd, ext = '.csv'):
                 FILE_LIST.append(i)
     return FILE_LIST
 
-def createListFromCSVColumn(csv_file_location, col_id:str):  
+def createListFromCSVColumn(csv_file_location, col_idx:int, delim:str =','):  
     '''
     @return: list from <col_id> in <csv_file_location>.
     Argument:
+    @col_index: 
     @csv_file_location: full path file location and name.
-    @col_id : number of the desired collumn to extrac info from (Consider index 0 for the first column)
+    @col_idx : number of the desired collumn to extrac info from (Consider index 0 for the first column)
     '''       
     x=[]
-    df = pd.read_csv(csv_file_location, index_col = None)
-    for i in df[col_id]:
+    df = pd.read_csv(csv_file_location, index_col= None, delimiter = delim)
+    for i in df.iloc[:,col_idx]:
         x.append(i)
     return x
 
-def createListFromExelColumn(excell_file_location,Sheet_id:str, col_id:str):  
+def createListFromExelColumn(excell_file_location,Sheet_id:str, col_idx:str):  
     '''
     @return: list from <col_id> in <excell_file_location>.
     Argument:
@@ -224,7 +247,7 @@ def createListFromExelColumn(excell_file_location,Sheet_id:str, col_id:str):
     '''       
     x=[]
     df = pd.ExcelFile(excell_file_location).parse(Sheet_id)
-    for i in df[col_id]:
+    for i in df[col_idx]:
         x.append(i)
     return x
 
@@ -251,8 +274,7 @@ def get_parenPath_name_ext(filePath):
 
 def importDataSet(dataSetName, targetCol: str):
     '''
-    Import datasets and return         
-    @input: DataSetName => The dataset path. 
+    @input: DataSetName => The dataset path. DataSet must be in *.csv format. 
     @Output: Features(x) and tragets(y) 
     ''' 
     x  = pd.read_csv(dataSetName, index_col = None)
@@ -351,7 +373,7 @@ def makePredictionRaster(rasterPath:os.path, model, saveRaster:bool=False):
     savePath = os.path.join(parentPath, (name+'_predicted.tif'))
     # read raster
     data, profile = readRaster(rasterPath)
-    print(profile)
+    # print(profile)
     rasterData = imageToTensor(data)[None,:] # if model demand extra dimention
     print('rasterData.shape into makePredictionRaster', rasterData.shape)
     # model
@@ -367,7 +389,7 @@ def makePredictionRaster(rasterPath:os.path, model, saveRaster:bool=False):
 def createRaster(savePath:os.path, data:np.array, profile):
     '''
     parameter: 
-    @savePath: Most contain the file nale *name.tif
+    @savePath: Most contain the file name ex.: *name.tif.
     @data: np.array with shape (bands,H,W)
     '''
     bands = data.shape[0] if len(data.shape)>2 else 1
@@ -391,17 +413,11 @@ def readRaster(rasterPath):
     profile = inRaster.profile
     rasterData = inRaster.read()
     return rasterData, profile
-
+   
 def plotHistogram(raster, bins: int=50, bandNumber: int = 1):
     show_hist(source=raster, bins=bins, title= f"Histogram of {bandNumber} bands", 
           histtype='stepfilled', alpha=0.5)
     return True
-
-def saveImag(pathToSave, imag):
-    ## TODO: Save the image in self.savePath. Determine if we save tif with rasterio or png standard. 
-    pass
-    
-
 
 
 ## From hereon NOT READY !!!
@@ -410,8 +426,7 @@ def clipRasterWithPoligon(rastPath, polygonPath,outputPath):
     Clip a raster (*.GTiff) with a single polygon feature 
     '''
     os.system("gdalwarp -datnodata -9999 -q -cutline" + polygonPath + " crop_to_cutline" + " -of GTiff" + rastPath + " " + outputPath)
-   
-   
+     
 def separateClippingPolygonss(inPath,field, outPath = "None"):
     '''
     Crete individial *.shp for each Clip in individual directories. 
