@@ -83,9 +83,7 @@ def offlineTransformation(imgMaskList:os.path, ImagSavePath, maskSavePath):
     
     @imgMaskList: A *csv file containig a pair path of images and masks per line.
     '''
-
     img_list, mask_list = createImageMaskList(imgMaskList)
-
     for i, m in zip(img_list,mask_list):
         ## Rotate 180deg
         imgData,imaProfile = U.readRaster(i)

@@ -219,9 +219,8 @@ def listALLFilesInDirByExt(cwd, ext = '.csv'):
     '''
     FILE_LIST = []
     for (root, dirs, file) in os.walk(cwd):
-        for i in file:
-            if ext in i:
-                FILE_LIST.append(i)
+        for d in dirs:
+            FILE_LIST.extend(listFreeFilesInDirByExt(os.path.join(root,d), ext)) 
     return FILE_LIST
 
 def createListFromCSVColumn(csv_file_location, col_idx:int, delim:str =','):  
@@ -282,6 +281,18 @@ def importDataSet(dataSetName, targetCol: str):
     x.drop([targetCol], axis=1, inplace = True)
     return x, y
 
+def noMatch_TifMask_List(scvPath,tifDir,col_idx:int=0,delim:str =';')->list:
+    '''
+    Finde the *.tif into the <tifDir> without match into the list of tif-mask pairs.
+    @csvPath: *csv containing the list of tif-mask pairs. 
+    @return: list of no matching file's path. 
+    '''
+    csvList = createListFromCSVColumn(scvPath,col_idx,delim = delim)
+    tifList = listFreeFilesInDirByExt(tifDir, ext='tif')
+    noMatchList = [tif for tif in tifList if not any([tif in item for item in csvList])] 
+    print(f"Available *tif :  {len(tifList)}")
+    print(f"NO matchig *.tif : {len(noMatchList)}")
+    return noMatchList
 
  ### Metrics ####  
 def accuracyFromConfusionMatrix(confusion_matrix):
