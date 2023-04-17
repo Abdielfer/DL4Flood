@@ -95,6 +95,7 @@ def offlineTransformation(imgMaskList:os.path, ImagSavePath:os.path, maskSavePat
         maskData, maskProfile = U.readRaster(m)
         maskRotData = np.rot90(maskData, k=2, axes=(1,2))
         # show(maskData)
+        
         # show(maskRotData)
         # maskRotData = transform.rotate(maskData, 180, preserve_range=True, clip= True)
         # maskRotData = maskRotData.astype(np.float32).astype(maskData.dtype)
