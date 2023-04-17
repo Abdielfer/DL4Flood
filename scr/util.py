@@ -397,24 +397,22 @@ def makePredictionRaster(rasterPath:os.path, model, saveRaster:bool=False):
         createRaster(savePath,rasterData, profile)    
     return y_hat[0]  #remouve the extra dimention added to pass through the model. 
 
-def createRaster(savePath:os.path, data:np.array, profile, noData:int = -9999):
+def createRaster(savePath:os.path, data:np.array, profile, noData:int = None):
     '''
     parameter: 
     @savePath: Most contain the file name ex.: *name.tif.
     @data: np.array with shape (bands,H,W)
     '''
     B,H,W = data.shape[-3],data.shape[-2],data.shape[-1] 
-    print(f"C : {B}, H : {H} , W : {W} ")
-    if noData:
-         profile.update(nodata = noData)
-    profile.update(dtype = rio.uint8)
+    # print(f"C : {B}, H : {H} , W : {W} ")
+    profile.update(dtype = rio.uint16, nodata = noData, blockysize = profile['blockysize'])
     with rio.open(
         savePath,
         mode="w",
         out_shape=(B, H ,W),
         **profile
         ) as new_dataset:
-            print(f"New Dataset.Profile: ->> {new_dataset.profile}")
+            # print(f"New Dataset.Profile: ->> {new_dataset.profile}")
             new_dataset.write(data)
     return savePath
 
@@ -429,7 +427,7 @@ def readRaster(rasterPath):
     inRaster = rio.open(rasterPath, mode="r")
     profile = inRaster.profile
     rasterData = inRaster.read()
-    print(f"raster data shape in ReadRaster : {rasterData.shape}")
+    # print(f"raster data shape in ReadRaster : {rasterData.shape}")
     return rasterData, profile
    
 def plotHistogram(raster, bins: int=50, bandNumber: int = 1):

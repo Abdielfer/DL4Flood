@@ -86,30 +86,27 @@ def offlineTransformation(imgMaskList:os.path, ImagSavePath:os.path, maskSavePat
     '''
     img_list, mask_list = createImageMaskList(imgMaskList)
     
-
     for i, m in zip(img_list, mask_list):
-        
         ## Rotate 180deg
         imgData,imaProfile = U.readRaster(i)
-        print(">>> Image to be transformed")
-        show(imgData)
-        imgRotData = transform.rotate(imgData, 180)
-        print(">>> Rotated image")
-        show(imgRotData)
-        
+        imgRotData = np.rot90(imgData, k=2, axes=(1,2)) 
+        # show(imgData)
+        # show(imgRotData)           
         maskData, maskProfile = U.readRaster(m)
-        print(">>> Mask to be transformed")
-        show(maskData)
-        maskRotData = transform.rotate(maskData, 180)
-        print(">>> Rotated mask")
-        show(maskRotData)
-
+        maskRotData = np.rot90(maskData, k=2, axes=(1,2))
+        # show(maskData)
+        # show(maskRotData)
+        # maskRotData = transform.rotate(maskData, 180, preserve_range=True, clip= True)
+        # maskRotData = maskRotData.astype(np.float32).astype(maskData.dtype)
+        ## Save
         _,imgName,imgExt=U.get_parenPath_name_ext(i)
         imagePath = os.path.join(ImagSavePath,imgName+'transf'+imgExt)
-        U.createRaster(imagePath,imgRotData, imaProfile)
+        U.createRaster(imagePath,imgRotData, imaProfile, noData = imaProfile['nodata'])
         _,maskName,maskExt=U.get_parenPath_name_ext(m)
         maskPath = os.path.join(maskSavePath,maskName+'transf'+maskExt)
-        U.createRaster(maskPath, maskRotData, maskProfile)
+        U.createRaster(maskPath, maskRotData.astype('int'), maskProfile)
+    
+    ## Return the last rotated image-mask pair for reference. 
     return imgRotData, maskRotData
 
 # TODO : define *args type  ## 
