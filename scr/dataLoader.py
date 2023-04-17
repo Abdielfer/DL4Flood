@@ -6,6 +6,7 @@ from torch.utils.data import Dataset, DataLoader,random_split
 from torchgeo.datasets import RasterDataset, unbind_samples, stack_samples
 import torchvision.transforms as transforms
 from skimage import transform
+from rasterio.plot import show
 from torchvision.transforms import functional as TF
 from scr import util as U
 import rasterio as rio
@@ -76,7 +77,7 @@ def createImageMaskList(imgMaskList:os.path):
         raise ValueError("Mismatch between the number of images and masks. You can run customDataSet._VerifyListsContent()")
     return img_list, mask_list 
       
-def offlineTransformation(imgMaskList:os.path, ImagSavePath, maskSavePath):
+def offlineTransformation(imgMaskList:os.path, ImagSavePath:os.path, maskSavePath:os.path)->bool:
     '''
     Perform permanent transformation to image-mask pair and save a transformed copy of <img> and <mask> in <savePath>.
     The rotated image and mask are saved with the original raster profile for reference only. 
@@ -84,20 +85,32 @@ def offlineTransformation(imgMaskList:os.path, ImagSavePath, maskSavePath):
     @imgMaskList: A *csv file containig a pair path of images and masks per line.
     '''
     img_list, mask_list = createImageMaskList(imgMaskList)
-    for i, m in zip(img_list,mask_list):
+    
+
+    for i, m in zip(img_list, mask_list):
+        
         ## Rotate 180deg
         imgData,imaProfile = U.readRaster(i)
-        imgRotData = transform.rotate(imgData.copy_(), 180, preserve_range=True)
+        print(">>> Image to be transformed")
+        show(imgData)
+        imgRotData = transform.rotate(imgData, 180)
+        print(">>> Rotated image")
+        show(imgRotData)
+        
         maskData, maskProfile = U.readRaster(m)
-        maskRotData = transform.rotate(maskData.copy_(), 180, preserve_range=True)
-        # Save
-        _,imgName,imgExt=U.get_parenPath_name_ext
-        imagePath = os.path.join(ImagSavePath,imgName+'trnaf'+imgExt)
-        U.createRaster(imagePath,imgRotData, imaProfile)
-        _,maskName,maskExt=U.get_parenPath_name_ext
-        maskPath = os.path.join(maskSavePath,maskName+'trnaf'+maskExt)
-        U.createRaster(maskPath, maskRotData, maskProfile)
+        print(">>> Mask to be transformed")
+        show(maskData)
+        maskRotData = transform.rotate(maskData, 180)
+        print(">>> Rotated mask")
+        show(maskRotData)
 
+        _,imgName,imgExt=U.get_parenPath_name_ext(i)
+        imagePath = os.path.join(ImagSavePath,imgName+'transf'+imgExt)
+        U.createRaster(imagePath,imgRotData, imaProfile)
+        _,maskName,maskExt=U.get_parenPath_name_ext(m)
+        maskPath = os.path.join(maskSavePath,maskName+'transf'+maskExt)
+        U.createRaster(maskPath, maskRotData, maskProfile)
+    return imgRotData, maskRotData
 
 # TODO : define *args type  ## 
 def customDataloader(dataset:customDataSet, args:dict) -> DataLoader:
