@@ -85,30 +85,32 @@ def offlineTransformation(imgMaskList:os.path, ImagSavePath:os.path, maskSavePat
     @imgMaskList: A *csv file containig a pair path of images and masks per line.
     '''
     img_list, mask_list = createImageMaskList(imgMaskList)
-    
     for i, m in zip(img_list, mask_list):
         ## Rotate 180deg
-        imgData,imaProfile = U.readRaster(i)
-        imgRotData = np.rot90(imgData, k=2, axes=(1,2)) 
-        # show(imgData)
-        # show(imgRotData)           
-        maskData, maskProfile = U.readRaster(m)
-        maskRotData = np.rot90(maskData, k=2, axes=(1,2))
-        # show(maskData)
-        
-        # show(maskRotData)
-        # maskRotData = transform.rotate(maskData, 180, preserve_range=True, clip= True)
-        # maskRotData = maskRotData.astype(np.float32).astype(maskData.dtype)
+        imgRotData, imaProfile = rotateRaster90_kTime(i,2)
+        maskRotData, maskProfile = rotateRaster90_kTime(m,2)
         ## Save
-        _,imgName,imgExt=U.get_parenPath_name_ext(i)
-        imagePath = os.path.join(ImagSavePath,imgName+'transf'+imgExt)
+        imagePath = U.addSubstringToName(i,'_transf', destinyPath= ImagSavePath)
         U.createRaster(imagePath,imgRotData, imaProfile, noData = imaProfile['nodata'])
-        _,maskName,maskExt=U.get_parenPath_name_ext(m)
-        maskPath = os.path.join(maskSavePath,maskName+'transf'+maskExt)
+        maskPath = U.addSubstringToName(m,'_transf', destinyPath= maskSavePath)
         U.createRaster(maskPath, maskRotData.astype('int'), maskProfile)
-    
     ## Return the last rotated image-mask pair for reference. 
     return imgRotData, maskRotData
+
+def rotateRaster90_kTime(raster, K):
+    '''
+    This function rotate the raster data, keeping the profile from the source. 
+    With axes = (1,2) we aviod change in image shape. 
+    NOTE: be carefull with dimentions after rotation. 
+    @Expected shape: C;H;W
+    @raster: raster path. 
+    @k: The k times to rotate the image in anticlockwise. 
+    '''
+    data,profile = U.readRaster(raster)
+    rotatedData = np.rot90(data, k=K, axes=(1,2))    
+    return rotatedData, profile
+
+
 
 # TODO : define *args type  ## 
 def customDataloader(dataset:customDataSet, args:dict) -> DataLoader:

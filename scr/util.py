@@ -271,6 +271,20 @@ def get_parenPath_name_ext(filePath):
     name, ext = splitFilenameAndExtention(filePath)
     return parentPath, name, ext
 
+    
+def addSubstringToName(path, subStr: str, destinyPath = None):
+    '''
+    @path: Path to the raster to read. 
+    @subStr:  String o add at the end of the origial name
+    @destinyPath (default = None)
+    '''
+    parentPath,name,ext= get_parenPath_name_ext(path)
+    if destinyPath != None: 
+        newPath = os.path.join(destinyPath,name+subStr+ ext)
+    else: 
+        newPath = os.path.join(parentPath,name+subStr+ ext)
+    return newPath
+
 def importDataSet(dataSetName, targetCol: str):
     '''
     @input: DataSetName => The dataset path. DataSet must be in *.csv format. 
