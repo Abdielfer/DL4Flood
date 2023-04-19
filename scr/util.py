@@ -208,9 +208,13 @@ def listFreeFilesInDirByExt(cwd, ext = '.csv'):
     @ext = *.csv by default.
     NOTE:  THIS function list only files that are directly into <cwd> path. 
     '''
+    file_list = []
     for (root, dirs, file) in os.walk(cwd):
-        file_list = [i for i in file if ext in i]
-        return file_list
+        for f in file:
+            _,_,extent = get_parenPath_name_ext(f)
+            if ext == extent:
+                file_list.append(f)
+    return file_list
 
 def listALLFilesInDirByExt(cwd, ext = '.csv'):
     '''
@@ -270,8 +274,7 @@ def get_parenPath_name_ext(filePath):
     parentPath = pathlib.PurePath(filePath).parent
     name, ext = splitFilenameAndExtention(filePath)
     return parentPath, name, ext
-
-    
+  
 def addSubstringToName(path, subStr: str, destinyPath = None):
     '''
     @path: Path to the raster to read. 
@@ -285,15 +288,35 @@ def addSubstringToName(path, subStr: str, destinyPath = None):
         newPath = os.path.join(parentPath,name+subStr+ ext)
     return newPath
 
-def importDataSet(dataSetName, targetCol: str):
+def createCSVFromList(pathToSave: os.path, listData:list):
     '''
-    @input: DataSetName => The dataset path. DataSet must be in *.csv format. 
-    @Output: Features(x) and tragets(y) 
-    ''' 
-    x  = pd.read_csv(dataSetName, index_col = None)
-    y = x[targetCol]
-    x.drop([targetCol], axis=1, inplace = True)
-    return x, y
+    Ths function create a *.csv file with one line per <lstData> element. 
+    @pathToSave: path of *.csv file to be writed with name and extention.
+    @listData: list to be writed. 
+    '''
+    parentPath,name,_ = get_parenPath_name_ext(pathToSave)
+    textPath = makePath(parentPath,(name+'.txt'))
+    with open(textPath, 'w') as output:
+        for line in listData:
+            output.write(str(line) + '\n')
+    read_file = pd.read_csv (textPath)
+    read_file.to_csv (pathToSave, index=None)
+    removeFile(textPath)
+    return True
+
+def makeTifGpkgPairsList(filesPath, delim:str = ';', mode: str = 'trn'):
+    tifList = listFreeFilesInDirByExt(filesPath,'.tif')
+    gpkgList = listFreeFilesInDirByExt(filesPath,'.gpkg')
+    pairImgMask = []
+    for tif in tifList:
+        _,tifName,_ = get_parenPath_name_ext(tif)
+        for gpkg in gpkgList:
+            if tifName in gpkg:
+                tifPath = makePath(filesPath,tif)
+                gpkgPath = makePath(filesPath, gpkg)
+                str4List = tifPath + delim + gpkgPath + delim + mode
+                pairImgMask.append(str4List)
+    return pairImgMask
 
 def noMatch_TifMask_List(scvPath,tifDir,col_idx:int=0,delim:str =';')->list:
     '''
@@ -307,6 +330,17 @@ def noMatch_TifMask_List(scvPath,tifDir,col_idx:int=0,delim:str =';')->list:
     print(f"Available *tif :  {len(tifList)}")
     print(f"NO matchig *.tif : {len(noMatchList)}")
     return noMatchList
+
+def importDataSet(dataSetName, targetCol: str):
+    '''
+    @input: DataSetName => The dataset path. DataSet must be in *.csv format. 
+    @Output: Features(x) and tragets(y) 
+    ''' 
+    x  = pd.read_csv(dataSetName, index_col = None)
+    y = x[targetCol]
+    x.drop([targetCol], axis=1, inplace = True)
+    return x, y
+
 
  ### Metrics ####  
 def accuracyFromConfusionMatrix(confusion_matrix):
