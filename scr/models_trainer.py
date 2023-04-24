@@ -6,6 +6,7 @@
 import numpy as np
 import datetime
 import torch
+from torch.nn.functional import sigmoid
 import matplotlib.pyplot as plt
 from scr import dataLoader as DL
 from torch.utils.tensorboard import SummaryWriter
@@ -34,7 +35,9 @@ class models_trainer(object):
         self.train_loader = train_loader
         self.val_loader = val_loader
 
-
+    def getModel(self):
+        return self.model   
+    
     def _make_train_step_fn(self):
         def perform_train_step_fn(x, y):
             self.optimizer.zero_grad()
@@ -84,7 +87,26 @@ class models_trainer(object):
 
         loss = np.mean(mini_batch_losses)
         return loss
-
+    
+    def _computeMetricPerMiniBatch(self, data_loader):
+        '''
+        Return de mean per batch of the metric in self.metric  
+        '''
+        miniBathcMetric = []
+        for x_batch, y_batch in data_loader:
+            metric=[]
+            for x,y in zip(x_batch, y_batch):
+                yHat = self.model(torch.unsqueeze(x,0))
+                y_hat_sigmoid = torch.round(sigmoid(yHat)).to(torch.int32)
+                y_item= y.numpy() if torch.is_tensor(y) else y.numpy().squeeze()
+                y_hat_item = y_hat_sigmoid.detach().numpy().squeeze() if torch.is_tensor(y_hat_sigmoid) else y_hat_sigmoid.numpy().squeeze()
+                metricPerImage = self.metric_fn(y_hat_item, y_item)
+                metric.append(metricPerImage)    
+            ItemMetric = round(np.mean(metric),2)
+            miniBathcMetric.append(ItemMetric)
+        metricMean = round(np.mean(miniBathcMetric),2)
+        return metricMean
+    
     def _computeMetricMiniBatch(self, data_loader):
         '''
         Return de mean per batch of the metric in self.metric  
@@ -93,9 +115,14 @@ class models_trainer(object):
         print(f"Actual metric {self.metric_fn}")
         miniBathcMetric = []
         for x_batch, y_batch in data_loader:
-            x_batch = x_batch.to(self.device)
-            y_batch = y_batch.to(self.device)
-            ItemMetric = self.metric_fn(x_batch[0][0], y_batch[0][0])
+            metric=[]
+            for x,y in zip(x_batch, y_batch):
+                yHat = self.model(torch.unsqueeze(x,0))
+                y_hat_item = int(sigmoid(yHat[0]))
+                y_item= y.numpy() if torch.is_tensor(y) else y.numpy().squeeze()
+                y_hat_item = y_hat_item.detach().numpy().squeeze() if torch.is_tensor(y_hat_item) else y_hat_item.numpy().squeeze()
+                metric.append(self.metric_fn(y_hat_item, y_item))
+            ItemMetric = np.mean(metric)
             print(f"ItemMetric : {ItemMetric}")
             miniBathcMetric.append(ItemMetric)
         print(f"miniBathcMetric : {miniBathcMetric} ")
@@ -118,14 +145,14 @@ class models_trainer(object):
                 val_loss = self._trainMiniBatch(validation=True)
                 print(f"val Loss = {val_loss}")
                 self.val_losses.append(val_loss)
-                metric = self._computeMetricMiniBatch(self.val_loader)
+                metric = self._computeMetricPerMiniBatch(self.val_loader)
                 self.val_metrics.append(metric)
                 print(f"Metric(s) per minibatch = {metric}")
 
             # If a SummaryWriter has been set...
             if self.writer:
                 scalars = {'training': loss}
-                metricSaclar = {'validation Metric': metric}
+                # metricSaclar = {'validation Metric': metric}
                 if val_loss is not None:
                     scalars.update({'validation': val_loss})
                 # Records both losses for each epoch under the main tag "loss"
@@ -133,9 +160,9 @@ class models_trainer(object):
                                         tag_scalar_dict=scalars,
                                         global_step=epoch)
                 self.writer.add_scalars(main_tag='metric',
-                                        tag_scalar_dict=metricSaclar,
+                                        # tag_scalar_dict=metricSaclar,
                                         global_step=epoch)  
-
+        self.plot_losses()
         if self.writer:
             # Closes the writer
             self.writer.close()

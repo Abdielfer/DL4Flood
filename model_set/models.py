@@ -220,9 +220,11 @@ class UNetFlood(nn.Module):
     - This vertion is adapted to small input images, considering higher resolution DTM inputs. 
     NOTE: Flood context in genereal is well described by a short distance from the river ( max 400m).
     This is an "in progress" experiment. (Marz 21st 2023)
+    @classes: Number of classes.
+    @in_channels: Number of channels in the input image. 
     """
 
-    def __init__(self, classes, in_channels, dropout=False, prob=0.5):
+    def __init__(self, classes, in_channels, dropout=False, prob=0.2):
         super().__init__()
         self.classes = classes
         self.conv1 = EncodingBlockFlood(in_channels, 64, dropout=dropout, prob=prob)

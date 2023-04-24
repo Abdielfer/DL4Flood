@@ -212,8 +212,22 @@ def listFreeFilesInDirByExt(cwd, ext = '.csv'):
     for (root, dirs, file) in os.walk(cwd):
         for f in file:
             _,_,extent = get_parenPath_name_ext(f)
-            if ext == extent:
+            if extent == ext:
+                print(f" Thhis is the fond extention {extent} vs the rial ext {ext} ")
                 file_list.append(f)
+    return file_list
+
+def listFreeFilesInDirByExt_fullPath(cwd, ext = '.csv'):
+    '''
+    @ext = *.csv by default.
+    NOTE:  THIS function list only files that are directly into <cwd> path. 
+    '''
+    file_list = []
+    for (root,_, file) in os.walk(cwd):
+        for f in file:
+            _,extent = splitFilenameAndExtention(f)
+            if ext == extent:
+                file_list.append(os.path.join(root,f))
     return file_list
 
 def listALLFilesInDirByExt(cwd, ext = '.csv'):
@@ -221,11 +235,23 @@ def listALLFilesInDirByExt(cwd, ext = '.csv'):
     @ext = *.csv by default.
     NOTE:  THIS function list ALL files that are directly into <cwd> path and children folders. 
     '''
-    FILE_LIST = []
-    for (root, dirs, file) in os.walk(cwd):
-        for d in dirs:
-            FILE_LIST.extend(listFreeFilesInDirByExt(os.path.join(root,d), ext)) 
-    return FILE_LIST
+    fullList: list = []
+    for (root, _, _) in os.walk(cwd):
+         fullList.extend(listFreeFilesInDirByExt(root, ext)) 
+    return fullList
+
+def listALLFilesInDirByExt_fullPath(cwd, ext = '.csv'):
+    '''
+    @ext: NOTE <ext> must contain the "." ex: '.csv'; '.tif'; etc...
+    NOTE:  THIS function list ALL files that are directly into <cwd> path and children folders. 
+    '''
+    fullList = []
+    for (root, _, _) in os.walk(cwd):
+        print(f"Roots {root}")
+        localList = listFreeFilesInDirByExt_fullPath(root, ext)
+        print(f"Local List len :-->> {len(localList)}")
+        fullList.extend(localList) 
+    return fullList
 
 def createListFromCSVColumn(csv_file_location, col_idx:int, delim:str =','):  
     '''
@@ -304,12 +330,12 @@ def createCSVFromList(pathToSave: os.path, listData:list):
     removeFile(textPath)
     return True
 
-def makeTifGpkgPairsList(filesPath, delim:str = ';', mode: str = 'trn'):
+def makeTifGpkgPairsList(filesPath, delim:str = ',', mode: str = 'trn'):
     tifList = listFreeFilesInDirByExt(filesPath,'.tif')
     gpkgList = listFreeFilesInDirByExt(filesPath,'.gpkg')
     pairImgMask = []
     for tif in tifList:
-        _,tifName,_ = get_parenPath_name_ext(tif)
+        tifName,_ = splitFilenameAndExtention(tif)
         for gpkg in gpkgList:
             if tifName in gpkg:
                 tifPath = makePath(filesPath,tif)
@@ -318,19 +344,42 @@ def makeTifGpkgPairsList(filesPath, delim:str = ';', mode: str = 'trn'):
                 pairImgMask.append(str4List)
     return pairImgMask
 
-def noMatch_TifMask_List(scvPath,tifDir,col_idx:int=0,delim:str =';')->list:
+def noMatch_TifMask_List(scvPath,tifDir,col_idx:int=0,delim:str =',',
+                         relocate: bool = False, relocatePath:os.path = None)->list:
     '''
     Finde the *.tif into the <tifDir> without match into the list of tif-mask pairs.
     @csvPath: *csv containing the list of tif-mask pairs. 
     @return: list of no matching file's path. 
+    @relocate: Bool: Defines if the no matching files are immediately relocated to a TransitFolder.
     '''
     csvList = createListFromCSVColumn(scvPath,col_idx,delim = delim)
-    tifList = listFreeFilesInDirByExt(tifDir, ext='tif')
-    noMatchList = [tif for tif in tifList if not any([tif in item for item in csvList])] 
-    print(f"Available *tif :  {len(tifList)}")
-    print(f"NO matchig *.tif : {len(noMatchList)}")
-    return noMatchList
-
+    print(f"CsV list len {len(csvList)}")
+    if relocate == False:
+        print("Relocate False")
+        tifList = listALLFilesInDirByExt(tifDir, ext='.tif')
+        noMatchList = [tif for tif in tifList if not any([tif in item for item in csvList])] 
+        print(f"Available *tif :  {len(tifList)}")
+        print(f"NO matchig *.tif : {len(noMatchList)}")
+        return noMatchList
+    elif relocate == True:
+        print("Relocate True")
+        tifList = listALLFilesInDirByExt_fullPath(tifDir, ext='.tif')
+        print(f"tifList list len {len(tifList)}")
+        noMatchList = []
+        if relocatePath == None:
+            relocatePath = input("Enter the path to relocate files")
+        transitPath = createTransitFolder(relocatePath)
+        for tif in tifList:
+            _,tifName,_ = get_parenPath_name_ext(tif)
+            if not any([tifName in item for item in csvList]):
+                noMatchList.append(tif)
+                relocateFile(tif,transitPath)
+        print(f"Available *tif :  {len(tifList)}")
+        print(f"NO matchig *.tif : {len(noMatchList)}")
+        return noMatchList
+    
+    
+    
 def importDataSet(dataSetName, targetCol: str):
     '''
     @input: DataSetName => The dataset path. DataSet must be in *.csv format. 

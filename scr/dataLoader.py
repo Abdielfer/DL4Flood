@@ -127,7 +127,7 @@ def customDataloader(dataset:customDataSet, args:dict) -> DataLoader:
     
     return customDL
 
-def splitDataset(dataset:customDataSet, proportions = [.7,.3] ,seed:int = 42, )-> customDataSet:
+def splitDataset(dataset:customDataSet, proportions = [.9,.1] ,seed:int = 42, )-> customDataSet:
     '''
     ref: https://pytorch.org/docs/stable/data.html# 
     '''
