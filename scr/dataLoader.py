@@ -77,25 +77,36 @@ def createImageMaskList(imgMaskList:os.path):
         raise ValueError("Mismatch between the number of images and masks. You can run customDataSet._VerifyListsContent()")
     return img_list, mask_list 
       
-def offlineTransformation(imgMaskList:os.path, ImagSavePath:os.path, maskSavePath:os.path)->bool:
+def offlineTransformation(imgMaskList:os.path, savePath:os.path,):
     '''
     Perform permanent transformation to image-mask pair and save a transformed copy of <img> and <mask> in <savePath>.
     The rotated image and mask are saved with the original raster profile for reference only. 
-    
-    @imgMaskList: A *csv file containig a pair path of images and masks per line.
+    @imgMaskList: A *.csv file containig a pair path to images-masks per line.
+    @return: 
+            1- <outputPathList> the list of transformed images-mask pair path.
+            2 - the last rotated image-mask pair for reference   
     '''
+    outputPathList = []
+    ImagSavePath = U.createTransitFolder(savePath, 'image')
+    maskSavePath = U.createTransitFolder(savePath, 'mask')
     img_list, mask_list = createImageMaskList(imgMaskList)
     for i, m in zip(img_list, mask_list):
         ## Rotate 180deg
         imgRotData, imaProfile = rotateRaster90_kTime(i,2)
         maskRotData, maskProfile = rotateRaster90_kTime(m,2)
         ## Save
-        imagePath = U.addSubstringToName(i,'_transf', destinyPath= ImagSavePath)
+        imagePath = U.addSubstringToName(i, '_rot180', destinyPath= ImagSavePath)
         U.createRaster(imagePath,imgRotData, imaProfile, noData = imaProfile['nodata'])
-        maskPath = U.addSubstringToName(m,'_transf', destinyPath= maskSavePath)
+        maskPath = U.addSubstringToName(m, '_rot180', destinyPath= maskSavePath)
         U.createRaster(maskPath, maskRotData.astype('int'), maskProfile)
+        #Create list Image-Mask pair path
+        newLine = imagePath + ';' + maskPath
+        outputPathList.append(newLine)
+    
+    scvPath = os.path.join(savePath,'transformedImageMaskPairList.csv')
+    U.createCSVFromList(scvPath,outputPathList)
     ## Return the last rotated image-mask pair for reference. 
-    return imgRotData, maskRotData
+    return scvPath, imgRotData, maskRotData
 
 def rotateRaster90_kTime(raster, K):
     '''

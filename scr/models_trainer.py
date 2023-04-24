@@ -10,6 +10,7 @@ from torch.nn.functional import sigmoid
 import matplotlib.pyplot as plt
 from scr import dataLoader as DL
 from torch.utils.tensorboard import SummaryWriter
+import losses
 
 plt.style.use('fivethirtyeight')
 

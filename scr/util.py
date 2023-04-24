@@ -185,8 +185,8 @@ def removeFile(filePath):
         return False
 
 
-def createTransitFolder(parent_dir_path):
-    path = os.path.join(parent_dir_path, 'TransitDir')
+def createTransitFolder(parent_dir_path, folderName = 'TransitDir'):
+    path = os.path.join(parent_dir_path, folderName)
     ensureDirectory(path)
     return path
 
@@ -309,9 +309,9 @@ def addSubstringToName(path, subStr: str, destinyPath = None):
     '''
     parentPath,name,ext= get_parenPath_name_ext(path)
     if destinyPath != None: 
-        newPath = os.path.join(destinyPath,name+subStr+ ext)
+        newPath = os.path.join(destinyPath,(name+subStr+ext))
     else: 
-        newPath = os.path.join(parentPath,name+subStr+ ext)
+        newPath = os.path.join(parentPath,(name+subStr+ ext))
     return newPath
 
 def createCSVFromList(pathToSave: os.path, listData:list):
@@ -349,7 +349,7 @@ def noMatch_TifMask_List(scvPath,tifDir,col_idx:int=0,delim:str =',',
     '''
     Finde the *.tif into the <tifDir> without match into the list of tif-mask pairs.
     @csvPath: *csv containing the list of tif-mask pairs. 
-    @return: list of no matching file's path. 
+    @return: list of no matching file's names. NOTE: If relocate = True, retur a list of full paths. 
     @relocate: Bool: Defines if the no matching files are immediately relocated to a TransitFolder.
     '''
     csvList = createListFromCSVColumn(scvPath,col_idx,delim = delim)
@@ -378,7 +378,21 @@ def noMatch_TifMask_List(scvPath,tifDir,col_idx:int=0,delim:str =',',
         print(f"NO matchig *.tif : {len(noMatchList)}")
         return noMatchList
     
+def makeMatching_TifMask_List(scvPath,tifDir,delim:str =',',)->list:
+    '''
+    Finde the *.tif into the <tifDir> without match into the list of tif-mask pairs.
+    @csvPath: *csv containing the list of tif-mask pairs. 
+    @return: list of no matching file's names. NOTE: If relocate = True, retur a list of full paths. 
+    @relocate: Bool: Defines if the no matching files are immediately relocated to a TransitFolder.
+    '''
+    matchingList =[]
+    tifList = listALLFilesInDirByExt(tifDir, ext='.tif')
+    matchingList = [tif for tif in tifList if any([tif in item for item in csvList])] 
     
+    print(f"Matching list len: -> {len(matchingList)}")
+       
+    csvList = createCSVFromList(scvPath,matchingList, delim = delim)
+    return matchingList
     
 def importDataSet(dataSetName, targetCol: str):
     '''
@@ -494,6 +508,19 @@ def makePredictionRaster(rasterPath:os.path, model, saveRaster:bool=False):
         createRaster(savePath,rasterData, profile)    
     return y_hat[0]  #remouve the extra dimention added to pass through the model. 
 
+def readRaster(rasterPath):
+    '''
+    Read a raster qith Rasterio.
+    return:
+     Raster data as np.array
+     Raster.profile: dictionary with all rater information
+    '''
+    inRaster = rio.open(rasterPath, mode="r")
+    profile = inRaster.profile
+    rasterData = inRaster.read()
+    # print(f"raster data shape in ReadRaster : {rasterData.shape}")
+    return rasterData, profile
+
 def createRaster(savePath:os.path, data:np.array, profile, noData:int = None):
     '''
     parameter: 
@@ -513,19 +540,6 @@ def createRaster(savePath:os.path, data:np.array, profile, noData:int = None):
             new_dataset.write(data)
     return savePath
 
-
-def readRaster(rasterPath):
-    '''
-    Read a raster qith Rasterio.
-    return:
-     Raster data as np.array
-     Raster.profile: dictionary with all rater information
-    '''
-    inRaster = rio.open(rasterPath, mode="r")
-    profile = inRaster.profile
-    rasterData = inRaster.read()
-    # print(f"raster data shape in ReadRaster : {rasterData.shape}")
-    return rasterData, profile
    
 def plotHistogram(raster, bins: int=50, bandNumber: int = 1):
     show_hist(source=raster, bins=bins, title= f"Histogram of {bandNumber} bands", 
