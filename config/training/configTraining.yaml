@@ -1,10 +1,17 @@
+
+
 defaults:
-  - model: gdl_unet
-  - modelMode: train
-  - loss: binary/softbce
-  - optimizer: adamw
-  - scheduler: plateau
-  - hydra: default
-  - override hydra/hydra_logging: colorlog # enable color logging to make it pretty
-  - override hydra/job_logging: colorlog # enable color logging to make it pretty
+  - parameters: parameters
   - _self_
+
+dataPath :
+dataLoaderArgs :  {'batch_size': 1, 'num_workers': 4,'drop_last': True}
+model: UNetFlood
+modelMode: train
+loss: lovasz_hinge
+optimizer: Adam
+OptimizerParams : {'lr': 0.0001}
+scheduler: plateau
+hydra: default
+override hydra/hydra_logging: colorlog # enable color logging to make it pretty
+override hydra/job_logging: colorlog # enable color logging to make it pretty
