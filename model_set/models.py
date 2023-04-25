@@ -218,7 +218,7 @@ class EncodingBlockFlood(nn.Module):
 class UNetFlood(nn.Module):
     """Main UNet architecture
     - This vertion is adapted to small input images, considering higher resolution DTM inputs. 
-    NOTE: Flood context in genereal is well described by a short distance from the river ( max 400m).
+    NOTE: Flood context in genereal is well described by a short distance from the river ( max 1000m).
     This is an "in progress" experiment. (Marz 21st 2023)
     @classes: Number of classes.
     @in_channels: Number of channels in the input image. 

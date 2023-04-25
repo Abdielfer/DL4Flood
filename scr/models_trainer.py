@@ -10,7 +10,7 @@ from torch.nn.functional import sigmoid
 import matplotlib.pyplot as plt
 from scr import dataLoader as DL
 from torch.utils.tensorboard import SummaryWriter
-import losses
+from scr import losses
 
 plt.style.use('fivethirtyeight')
 
@@ -100,7 +100,7 @@ class models_trainer(object):
                 yHat = self.model(torch.unsqueeze(x,0))
                 y_hat_sigmoid = torch.round(sigmoid(yHat)).to(torch.int32)
                 y_item= y.numpy() if torch.is_tensor(y) else y.numpy().squeeze()
-                y_hat_item = y_hat_sigmoid.detach().numpy().squeeze() if torch.is_tensor(y_hat_sigmoid) else y_hat_sigmoid.numpy().squeeze()
+                y_hat_item = y_hat_sigmoid.detach().cpu().numpy().squeeze() if torch.is_tensor(y_hat_sigmoid) else y_hat_sigmoid.numpy().squeeze()
                 metricPerImage = self.metric_fn(y_hat_item, y_item)
                 metric.append(metricPerImage)    
             ItemMetric = round(np.mean(metric),2)
@@ -176,7 +176,6 @@ class models_trainer(object):
                       'loss': self.losses,
                       'val_loss': self.val_losses,
                       'validation_metric': self.val_metrics}
-        
         torch.save(checkpoint, filename)
 
     def load_checkpoint(self, filename):
@@ -185,13 +184,15 @@ class models_trainer(object):
         # Restore state for model and optimizer
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-
         self.total_epochs = checkpoint['epoch']
         self.losses = checkpoint['loss']
         self.val_losses = checkpoint['val_loss']
         self.model.train() # always use TRAIN for resuming training   
 
     def predict(self, x):
+        '''
+        @Return: A 0-1 mask as np.array. 
+        '''
         self.model.eval() 
         # Takes aNumpy input and make it a float tensor
         x_tensor = torch.as_tensor(x).float()
@@ -200,7 +201,9 @@ class models_trainer(object):
         # Set it back to train mode
         self.model.train()
         # Detaches it, brings it to CPU and back to Numpy
-        return y_hat_tensor.detach().cpu().numpy()
+        mask = torch.round(sigmoid(y_hat_tensor)).to(torch.int32)
+        return mask.detach().cpu().numpy()
+
 
     def plot_losses(self):
         fig = plt.figure(figsize=(10, 4))
