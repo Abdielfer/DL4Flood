@@ -41,8 +41,8 @@ class models_trainer(object):
     
     def _make_train_step_fn(self):
         def perform_train_step_fn(x, y):
-            self.optimizer.zero_grad()
             self.model.train()
+            self.optimizer.zero_grad()
             yhat = self.model(x)
             loss = self.loss_fn(yhat, y)
             loss.backward()

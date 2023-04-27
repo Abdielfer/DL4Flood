@@ -55,7 +55,6 @@ class customDataSet(Dataset):
         if random.random() > 0.5:
             imag = transform.rotate(imag,90,preserve_range=True)
             mask = transform.rotate(mask, 90,preserve_range=True)
-        
         # h_flip
         if random.random() > 0.5:
             imag = np.ascontiguousarray(imag[:, ::-1, ...])
@@ -121,9 +120,6 @@ def rotateRaster90_kTime(raster, K):
     rotatedData = np.rot90(data, k=K, axes=(1,2))    
     return rotatedData, profile
 
-
-
-# TODO : define *args type  ## 
 def customDataloader(dataset:customDataSet, args:dict) -> DataLoader:
     '''
     @args: Dic : {'batch_size': 1, 'num_workers': 1,'drop_last': True}

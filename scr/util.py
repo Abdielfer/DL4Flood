@@ -4,6 +4,7 @@ import pathlib
 import shutil
 import joblib
 import time
+import secrets
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -93,6 +94,10 @@ def removeCoordinatesFromDataSet(dataSet):
     else: 
       print("DataSet has no coordinates to remove")
     return DSNoCoord
+
+def randomSamplingFromList(listeToSmpl, numberOfSmpl):
+    secure_random = secrets.SystemRandom()
+    return secure_random.sample(listeToSmpl, numberOfSmpl)
 
 ### Modifying class domain
 def pseudoClassCreation(dataset, conditionVariable, threshold, pseudoClass, targetColumnName):
