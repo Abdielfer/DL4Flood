@@ -207,7 +207,7 @@ def clearTransitFolderContent(path, filetype = '/*'):
         os.remove(f)
     return True
 
-def listFreeFilesInDirByExt(cwd, ext = '.csv'):
+def listFreeFilesInDirByExt(cwd, ext = '.tif'):
     '''
     @ext = *.csv by default.
     NOTE:  THIS function list only files that are directly into <cwd> path. 
@@ -228,8 +228,9 @@ def listFreeFilesInDirByExt_fullPath(cwd, ext = '.csv'):
     NOTE:  THIS function list only files that are directly into <cwd> path. 
     '''
     file_list = []
-    for (root,_, file) in os.walk(cwd):
+    for (root,_, file) in os.walk(cwd, followlinks=True):
         for f in file:
+            print(f"F in file {f} ")
             _,extent = splitFilenameAndExtention(f)
             if ext == extent:
                 file_list.append(os.path.join(root,f))
@@ -337,8 +338,8 @@ def createCSVFromList(pathToSave: os.path, listData:list):
 
 def makeTifGpkgPairsList(filesPath, delim:str = ',', mode: str = 'trn'):
     print(filesPath)
-    tifList = listFreeFilesInDirByExt(filesPath,'.tif')
-    gpkgList = listFreeFilesInDirByExt(filesPath,'.gpkg')
+    tifList = listFreeFilesInDirByExt_fullPath(filesPath, ext='.tif')
+    gpkgList = listFreeFilesInDirByExt_fullPath(filesPath,ext='.gpkg')
     pairImgMask = []
     for tif in tifList:
         tifName,_ = splitFilenameAndExtention(tif)
