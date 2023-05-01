@@ -214,6 +214,7 @@ def listFreeFilesInDirByExt(cwd, ext = '.csv'):
     '''
     file_list = []
     for (root, dirs, file) in os.walk(cwd):
+        print(f"Root in velum {root} ")
         for f in file:
             _,_,extent = get_parenPath_name_ext(f)
             if extent == ext:
@@ -335,6 +336,7 @@ def createCSVFromList(pathToSave: os.path, listData:list):
     return True
 
 def makeTifGpkgPairsList(filesPath, delim:str = ',', mode: str = 'trn'):
+    print(filesPath)
     tifList = listFreeFilesInDirByExt(filesPath,'.tif')
     gpkgList = listFreeFilesInDirByExt(filesPath,'.gpkg')
     pairImgMask = []
