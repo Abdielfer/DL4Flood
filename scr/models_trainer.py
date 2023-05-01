@@ -214,6 +214,7 @@ class models_trainer(object):
         plt.tight_layout()
         return fig
    
+   
     def set_seed(self, seed=42):
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False    
