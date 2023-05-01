@@ -131,7 +131,6 @@ class models_trainer(object):
         metrics[str(self.metric_fn)] = metricMean
         return metricMean
 
-
     def train(self, n_epochs, seed=42):
         self.set_seed(seed)
 
@@ -204,7 +203,6 @@ class models_trainer(object):
         mask = torch.round(sigmoid(y_hat_tensor)).to(torch.int32)
         return mask.detach().cpu().numpy()
 
-
     def plot_losses(self):
         fig = plt.figure(figsize=(10, 4))
         plt.plot(self.losses, label='Training Loss', c='b')
@@ -215,7 +213,6 @@ class models_trainer(object):
         plt.legend()
         plt.tight_layout()
         return fig
-
    
     def set_seed(self, seed=42):
         torch.backends.cudnn.deterministic = True
