@@ -5,6 +5,7 @@ import shutil
 import joblib
 import time
 import random
+import math
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -171,13 +172,10 @@ def makeFileCopy(inputFilePath, outputFilePath):
         return outputFilePath
     except shutil.SameFileError:
         print("Source and destination represents the same file.")
-        return False
     except PermissionError:
         print("Permission denied.")
-        return False
     except:
         print("Error occurred while copying file.")
-        return False
 
 def removeFile(filePath):
     try:
@@ -187,7 +185,6 @@ def removeFile(filePath):
         print(error)
         print("File path can not be removed")
         return False
-
 
 def createTransitFolder(parent_dir_path, folderName = 'TransitDir'):
     path = os.path.join(parent_dir_path, folderName)
@@ -410,6 +407,7 @@ def importDataSet(dataSetName, targetCol: str):
 
 
  ### Metrics ####  
+
 def accuracyFromConfusionMatrix(confusion_matrix):
     '''
     Only for binary
@@ -425,7 +423,7 @@ def pritnAccuracy(y_predic, y_val):
     cm = confusion_matrix(y_predic, y_val) 
     print("Accuracy of MLPClassifier : ", accuracyFromConfusionMatrix(cm)) 
 
-           
+
 ###########            
 ### GIS ###
 ###########
@@ -512,7 +510,7 @@ def makePredictionRaster(rasterPath:os.path, model, saveRaster:bool=False):
         createRaster(savePath,rasterData, profile)    
     return y_hat[0]  #remouve the extra dimention added to pass through the model. 
 
-def readRaster(rasterPath):
+def readRaster(rasterPath:os.path):
     '''
     Read a raster qith Rasterio.
     return:
@@ -543,13 +541,106 @@ def createRaster(savePath:os.path, data:np.array, profile, noData:int = None):
             # print(f"New Dataset.Profile: ->> {new_dataset.profile}")
             new_dataset.write(data)
     return savePath
-
    
 def plotHistogram(raster, bins: int=50, bandNumber: int = 1):
     show_hist(source=raster, bins=bins, title= f"Histogram of {bandNumber} bands", 
           histtype='stepfilled', alpha=0.5)
     return True
 
+
+#### Compute globals Mean and STD from a set of ranter imkages###
+class standardizer():
+    def __init__(self, rasterList:list, additionalNOData= None) -> None:
+        '''
+        Class to manage the standardization of a set of rasters. 
+         - Compute the global values of min, max, mean and STD for a set of raster.
+         - Save the global values as *csv file.
+         - Standardize a raster set or a single raster, using the globals min, max, mean and std
+        '''
+        self.globMin = np.inf
+        self.glogMax = -np.inf
+        self.rasterList = rasterList
+        self.globMean = 0
+        self.globSTD = 0
+        self.extraNoData = additionalNOData
+        pass
+
+    def computeGlobalValues(self):
+        '''
+        Compute the global Standard Deviation from a list of raters.
+        @rasterList: a list of raster path.
+        '''
+        globalCont = 0  # The total number of pixels in <rasterList>, different from NoData value.
+        cummulativeMean = 0
+        # Compute globalMin, globalMax, globalMean
+        for ras in self.rasterList:
+            localMin, localMax,rasMean,rasCont = computeRaterStats(ras, additionalNOData=self.extraNoData) #rasMin, rasMax, rasMean, rasNoNaNCont
+            self.updateGlobalMinMax(localMin, localMax)
+            globalCont += rasCont
+            cummulativeMean += rasMean
+        self.globMean = cummulativeMean/len(self.rasterList)  # From the math principle: the mean of subsets means is also the global mean. 
+        #Compute globa quadratic error
+        globSumQuadraticError = 0 
+        for raster in self.rasterList:
+            rasData = replaceRastNoDataWithNan(raster)
+            globSumQuadraticError += computeSumQuadraticError(rasData,self.globMean)
+        self.globSTD = math.sqrt(globSumQuadraticError/globalCont )
+       
+    def updateGlobalMinMax(self, localMin,localMax):
+        if localMin < self.globMin: self.globMin = localMin
+        if localMax > self.glogMax: self.glogMax = localMax
+
+    def setGlobals(self,min = None, max = None, mean = None, std = None):
+        if min is not None: self.globMin = min
+        if max is not None: self.globMax = max
+        if mean is not None: self.globMean = mean
+        if std is not None: self.globSTD = std
+
+    def setExtraNoData(self, value):
+        self.extraNoData = value
+
+    def getGlobals(self):
+        return self.globMin, self.glogMax, self.globMean, self.globSTD   
+
+    def saveGlobals(self, pathToSaveCSV: os.path):
+        globals = {'globalMin': self.globMin, 'globalMax': self.globMax, 'globalMean': self.globMean, 'globalSTD': self.globSTD}
+        with open(pathToSaveCSV, 'w') as f:
+            for key in globals.keys():
+                f.write("%s,%s\n"%(key,globals[key]))
+
+    def standardizeRasterData(self, rasterData:np.array )->np.array:
+        return (rasterData - self.globMean)/self.globSTD  
+
+def replaceRastNoDataWithNan(rasterPath:os.path,extraNoDataVal: float = None)-> np.array:
+    rasterData,profil = readRaster(rasterPath)
+    NOData = profil['nodata']
+    rasterDataNan = np.where(((rasterData == NOData)|(rasterData == extraNoDataVal)), np.nan, rasterData) 
+    return rasterDataNan
+
+def computeSumQuadraticError(arr:np.array, mean):
+    '''
+    Compute elementwise quadratic errors of a np.array, and its sum excluding np.nan values
+    @mean: This mean could be the mean of <<arr>> or an external mean. 
+    '''
+    quadError = (arr - mean)**2
+    return np.nansum(quadError)
+
+def computeRaterStats(rasterPath:os.path):
+    '''
+    Read a reaste and return: 
+    @Return
+    @rasMin: Raster min.
+    @rasMax: Raster max.
+    @rasMean: Rater mean.
+    @rasNoNaNSum: Raster sum of NOT NoData pixels
+    @rasNoNaNCont: Raster count of all NOT NoData pixels
+    '''
+    rasDataNan = replaceRastNoDataWithNan(rasterPath)
+    rasMin = np.min(rasDataNan)
+    rasMax = np.max(rasDataNan)
+    rasMean = np.mean(rasDataNan)
+    rasNoNaNCont = np.count_nonzero(rasDataNan != np.nan)
+    return rasMin, rasMax, rasMean, rasNoNaNCont
 
 ## From hereon NOT READY !!!
 def clipRasterWithPoligon(rastPath, polygonPath,outputPath):
