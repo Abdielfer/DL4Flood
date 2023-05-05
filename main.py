@@ -7,6 +7,11 @@ from scr import models_trainer as MT
 from scr.losses import iou_binary,binaryAccuracy, lovasz_hinge 
 from omegaconf import DictConfig
 
+class computeStandadizers():
+    def __init__(self) -> None:
+        pass
+
+
 class excecuteTraining():
     def __init__(self, cfg:DictConfig) -> None:
         
