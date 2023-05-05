@@ -612,7 +612,8 @@ class standardizer():
                 f.write("%s,%s\n"%(key,globals[key]))
 
     def standardizeRasterData(self, rasterData:np.array )->np.array:
-        return (rasterData - self.globMean)/self.globSTD  
+        output = (rasterData - self.globMean)/self.globSTD 
+        return  output
 
 def replaceRastNoDataWithNan(rasterPath:os.path,extraNoDataVal: float = None)-> np.array:
     rasterData,profil = readRaster(rasterPath)
