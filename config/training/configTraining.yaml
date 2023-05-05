@@ -1,10 +1,17 @@
 
-
+### ~/config.yaml
 defaults:
   - parameters: parameters
   - _self_
 
-dataPath :
+local: /Users/abdielfer/DESS/Internship2022/RNCanWork/FloodProbabRNCanAbd/
+pathTrainingDataset: basin1TrainUnbalanced.csv
+
+targetColName: percentage
+
+# @package _group_
+name: param
+dataPath : 
 dataLoaderArgs :  {'batch_size': 1, 'num_workers': 4,'drop_last': True}
 model: UNetFlood
 modelMode: train

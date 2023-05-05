@@ -8,9 +8,22 @@ from scr.losses import iou_binary,binaryAccuracy, lovasz_hinge
 from omegaconf import DictConfig
 
 class computeStandadizers():
-    def __init__(self) -> None:
+    def __init__(self, cfg:DictConfig) -> None:
+        '''
+        @filelist: os.path containing the list of rater 
+        '''
+        self.list = cfg['trainingDataList']
+        self.stardardizers = {}
+        self.stardardizers = self.computeStarndardizers()
+        self.savePath = cfg['standardizerSavePath']
+        self.compute()
         pass
-
+    
+    def compute(self)-> dict:
+        standardizer = U.standardizer(self.list)
+        standardizer.computeGlobalValues()
+        standardizer.saveGlobals(self.savePath)
+        return standardizer.getGlobals()
 
 class excecuteTraining():
     def __init__(self, cfg:DictConfig) -> None:
@@ -32,14 +45,13 @@ class excecuteTraining():
         losses = []
         return model, metric, losses
     
-@hydra.main(config_path=f"parameters", config_name="configTraining.yaml")
+@hydra.main(config_path=f"config\OPS", config_name="configPC.yaml")
 def main(cfg: DictConfig):
-    
-    model, metric, losses = excecuteTraining(cfg)
-    
-    name = model.name
-    U.saveModel(model, name)
-
+    MinMaxMeanSTD = computeStandadizers(cfg)
+    print(MinMaxMeanSTD)
+    # model, metric, losses = excecuteTraining(cfg)
+    # name = model.name
+    # U.saveModel(model, name)
 
 if __name__ == "__main__":
     with U.timeit():

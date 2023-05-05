@@ -1,9 +1,8 @@
-defaults:
-  - model: gdl_unet
-  - loss: binary/softbce
-  - optimizer: adamw
-  - scheduler: plateau
-  - hydra: default
-  - override hydra/hydra_logging: colorlog # enable color logging to make it pretty
-  - override hydra/job_logging: colorlog # enable color logging to make it pretty
+## ~/config/OPS/configMac.ymal
+  - projectRoot: 'C:\Users\abfernan\CrossCanFloodMapping\DL4Flood'
+  - dataRoot: 'C:\Users\abfernan\CrossCanFloodMapping\DatasetCNNFlood\C1Dataset\Percentage_1\'
+  - trainingDataList : ${dataRoot}\Percentage_1_feat1_min-annot1_trn.csv
+  - testingDataList: ${dataRoot}\Percentage_1_feat1_min-annot1_tst.csv
+  - validationDataList: ${dataRoot}
+  - standardizerSavePath : ${dataRoot}\standardizers.csv 
   - _self_
