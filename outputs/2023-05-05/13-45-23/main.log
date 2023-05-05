@@ -1,0 +1,1 @@
+[2023-05-05 13:45:23,151][rasterio._env][INFO] - GDAL signalled an error: err_no=4, msg='C:/Users/abfernan/CrossCanFloodMapping/DatasetCNNFlood/C1Dataset/Percentage_1/trn/CA_Lethbridge/images/CA_Lethbridge_360297_05569863046_5500044_366861254.tif: No such file or directory'

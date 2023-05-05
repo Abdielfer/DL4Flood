@@ -186,7 +186,7 @@ def removeFile(filePath):
         print("File path can not be removed")
         return False
 
-def createTransitFolder(parent_dir_path, folderName = 'TransitDir'):
+def createTransitFolder(parent_dir_path, folderName:str = 'TransitDir'):
     path = os.path.join(parent_dir_path, folderName)
     ensureDirectory(path)
     return path
@@ -255,6 +255,18 @@ def listALLFilesInDirByExt_fullPath(cwd, ext = '.csv'):
         print(f"Local List len :-->> {len(localList)}")
         fullList.extend(localList) 
     return fullList
+
+def createListFromCSV(csv_file_location, delim:str =','):  
+    '''
+    @return: list from a <csv_file_location>.
+    Argument:
+    @csv_file_location: full path file location and name.
+    '''       
+    df = pd.read_csv(csv_file_location, index_col= None, delimiter = delim)
+    out = []
+    for i in range(0,df.shape[0]):
+        out.append(df.iloc[i,:].tolist()[0])    
+    return out
 
 def createListFromCSVColumn(csv_file_location, col_idx:int, delim:str =','):  
     '''
@@ -538,11 +550,12 @@ def createRaster(savePath:os.path, data:np.array, profile, noData:int = None):
     with rio.open(
         savePath,
         mode="w",
-        out_shape=(B, H ,W),
+        #out_shape=(B, H ,W),
         **profile
         ) as new_dataset:
             # print(f"New Dataset.Profile: ->> {new_dataset.profile}")
             new_dataset.write(data)
+            print("Created new raster>>>")
     return savePath
    
 def plotHistogram(raster, bins: int=50, bandNumber: int = 1):
@@ -565,7 +578,6 @@ class standardizer():
         self.globMean = 0
         self.globSTD = 0
        
-
     def computeGlobalValues(self, rasterListPath, extraNoData = None):
         '''
         Compute the global Standard Deviation from a list of raters.

@@ -6,7 +6,7 @@ model: UNetFlood
 modelMode: train
 loss: lovasz_hinge
 optimizer: Adam
-OptimizerParams : {'lr': 0.0001}
+OptimizerParams : {'lr': 0.001}
 scheduler: plateau
 hydra: default
 override hydra/hydra_logging: colorlog # enable color logging to make it pretty

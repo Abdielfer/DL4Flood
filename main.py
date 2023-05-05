@@ -24,6 +24,15 @@ class computeStandardizers():
         standardizer.saveGlobals(self.savePath)
         return standardizer.getGlobals()
 
+class applyPermanentTransformation():
+    def __init__(self,cfg:DictConfig) -> None:
+        self.dataSourcePath = cfg['trainingDataList']
+        self.dirToSave = cfg['permanentTransformetionSavePath']
+        self.transitFolder = U.createTransitFolder(self.dirToSave, folderName = 'transformedTif')
+        pass
+    def transform(self):
+        D.offlineTransformation(self.dataSourcePath,self.transitFolder)
+
 class excecuteTraining():
     def __init__(self, cfg:DictConfig) -> None:
         
@@ -44,10 +53,17 @@ class excecuteTraining():
         losses = []
         return model, metric, losses
     
-@hydra.main(config_path=f"config\OPS", config_name="configPC.yaml")
+@hydra.main(version_base=None, config_path=f"config\OPS", config_name="configPC.yaml")
 def main(cfg: DictConfig):
-    MinMaxMeanSTD = computeStandardizers(cfg)
-    print(MinMaxMeanSTD)
+    ### Performe offline transformations
+    transformer = applyPermanentTransformation(cfg)
+    transformer.transform()
+
+    ### Compute standardizers
+    # MinMaxMeanSTD = computeStandardizers(cfg)
+    # print(MinMaxMeanSTD)
+    
+    ### Training cycle
     # model, metric, losses = excecuteTraining(cfg)
     # name = model.name
     # U.saveModel(model, name)
