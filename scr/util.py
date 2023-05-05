@@ -204,13 +204,14 @@ def clearTransitFolderContent(path, filetype = '/*'):
         os.remove(f)
     return True
 
-def listFreeFilesInDirByExt(cwd, ext = '.csv'):
+def listFreeFilesInDirByExt(cwd, ext = '.tif'):
     '''
     @ext = *.csv by default.
     NOTE:  THIS function list only files that are directly into <cwd> path. 
     '''
     file_list = []
     for (root, dirs, file) in os.walk(cwd):
+        print(f"Root in velum {root} ")
         for f in file:
             _,_,extent = get_parenPath_name_ext(f)
             if extent == ext:
@@ -224,8 +225,9 @@ def listFreeFilesInDirByExt_fullPath(cwd, ext = '.csv'):
     NOTE:  THIS function list only files that are directly into <cwd> path. 
     '''
     file_list = []
-    for (root,_, file) in os.walk(cwd):
+    for (root,_, file) in os.walk(cwd, followlinks=True):
         for f in file:
+            print(f"F in file {f} ")
             _,extent = splitFilenameAndExtention(f)
             if ext == extent:
                 file_list.append(os.path.join(root,f))
@@ -332,8 +334,9 @@ def createCSVFromList(pathToSave: os.path, listData:list):
     return True
 
 def makeTifGpkgPairsList(filesPath, delim:str = ',', mode: str = 'trn'):
-    tifList = listFreeFilesInDirByExt(filesPath,'.tif')
-    gpkgList = listFreeFilesInDirByExt(filesPath,'.gpkg')
+    print(filesPath)
+    tifList = listFreeFilesInDirByExt_fullPath(filesPath, ext='.tif')
+    gpkgList = listFreeFilesInDirByExt_fullPath(filesPath,ext='.gpkg')
     pairImgMask = []
     for tif in tifList:
         tifName,_ = splitFilenameAndExtention(tif)

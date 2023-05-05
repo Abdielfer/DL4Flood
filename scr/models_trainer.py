@@ -2,7 +2,7 @@
 # %load stepbystep/v0.py
 ### Fron: Deep_Learning with Pythorch Step By Step. Volume II. Daniel Voigt Godoy
 ### https://github.com/dvgodoy/PyTorchStepByStep 
-
+ 
 import numpy as np
 import datetime
 import torch
