@@ -7,21 +7,20 @@ from scr import models_trainer as MT
 from scr.losses import iou_binary,binaryAccuracy, lovasz_hinge 
 from omegaconf import DictConfig
 
-class computeStandadizers():
+class computeStandardizers():
     def __init__(self, cfg:DictConfig) -> None:
         '''
         @filelist: os.path containing the list of rater 
         '''
         self.list = cfg['trainingDataList']
-        self.stardardizers = {}
-        self.stardardizers = self.computeStarndardizers()
         self.savePath = cfg['standardizerSavePath']
-        self.compute()
+        self.stardardizers = {}
+        self.stardardizers = self.compute()
         pass
     
     def compute(self)-> dict:
-        standardizer = U.standardizer(self.list)
-        standardizer.computeGlobalValues()
+        standardizer = U.standardizer()
+        standardizer.computeGlobalValues(self.list)
         standardizer.saveGlobals(self.savePath)
         return standardizer.getGlobals()
 
@@ -47,7 +46,7 @@ class excecuteTraining():
     
 @hydra.main(config_path=f"config\OPS", config_name="configPC.yaml")
 def main(cfg: DictConfig):
-    MinMaxMeanSTD = computeStandadizers(cfg)
+    MinMaxMeanSTD = computeStandardizers(cfg)
     print(MinMaxMeanSTD)
     # model, metric, losses = excecuteTraining(cfg)
     # name = model.name

@@ -553,7 +553,7 @@ def plotHistogram(raster, bins: int=50, bandNumber: int = 1):
 
 #### Compute globals Mean and STD from a set of ranter imkages###
 class standardizer():
-    def __init__(self, rasterList:list, additionalNOData= None) -> None:
+    def __init__(self) -> None:
         '''
         Class to manage the standardization of a set of rasters. 
          - Compute the global values of min, max, mean and STD for a set of raster.
@@ -561,37 +561,39 @@ class standardizer():
          - Standardize a raster set or a single raster, using the globals min, max, mean and std
         '''
         self.globMin = np.inf
-        self.glogMax = -np.inf
-        self.rasterList = rasterList
+        self.globMax = -np.inf
         self.globMean = 0
         self.globSTD = 0
-        self.extraNoData = additionalNOData
-        pass
+       
 
-    def computeGlobalValues(self):
+    def computeGlobalValues(self, rasterListPath, extraNoData = None):
         '''
         Compute the global Standard Deviation from a list of raters.
         @rasterList: a list of raster path.
         '''
+        rasterList = createListFromCSVColumn(rasterListPath,0,';')
         globalCont = 0  # The total number of pixels in <rasterList>, different from NoData value.
         cummulativeMean = 0
         # Compute globalMin, globalMax, globalMean
-        for ras in self.rasterList:
-            localMin, localMax,rasMean,rasCont = computeRaterStats(ras, additionalNOData=self.extraNoData) #rasMin, rasMax, rasMean, rasNoNaNCont
+        for ras in rasterList:
+            localMin, localMax,rasMean,rasCont = computeRaterStats(ras) #rasMin, rasMax, rasMean, rasNoNaNCont
             self.updateGlobalMinMax(localMin, localMax)
             globalCont += rasCont
             cummulativeMean += rasMean
-        self.globMean = cummulativeMean/len(self.rasterList)  # From the math principle: the mean of subsets means is also the global mean. 
+        self.globMean = cummulativeMean/len(rasterList)  # From the math principle: the mean of subsets means is also the global mean. 
+        print(f"Globals : min:{self.globMin}>> max:{self.globMax} >> MEan : {self.globMean} >> globalCount {globalCont}" )
         #Compute globa quadratic error
         globSumQuadraticError = 0 
-        for raster in self.rasterList:
-            rasData = replaceRastNoDataWithNan(raster)
+        for raster in rasterList:
+            rasData = replaceRastNoDataWithNan(raster,extraNoDataVal= extraNoData)
             globSumQuadraticError += computeSumQuadraticError(rasData,self.globMean)
+        
         self.globSTD = math.sqrt(globSumQuadraticError/globalCont )
-       
+        print(f"Final values: GlobSumSQError {globSumQuadraticError}, GlobSTD : {self.globSTD}")
+
     def updateGlobalMinMax(self, localMin,localMax):
         if localMin < self.globMin: self.globMin = localMin
-        if localMax > self.glogMax: self.glogMax = localMax
+        if localMax > self.globMax: self.globMax = localMax
 
     def setGlobals(self,min = None, max = None, mean = None, std = None):
         if min is not None: self.globMin = min
@@ -603,7 +605,7 @@ class standardizer():
         self.extraNoData = value
 
     def getGlobals(self):
-        return self.globMin, self.glogMax, self.globMean, self.globSTD   
+        return self.globMin, self.globMax, self.globMean, self.globSTD   
 
     def saveGlobals(self, pathToSaveCSV: os.path):
         globals = {'globalMin': self.globMin, 'globalMax': self.globMax, 'globalMean': self.globMean, 'globalSTD': self.globSTD}

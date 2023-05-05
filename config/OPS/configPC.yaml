@@ -1,8 +1,10 @@
 ## ~/config/OPS/configMac.ymal
-  - projectRoot: 'C:\Users\abfernan\CrossCanFloodMapping\DL4Flood'
-  - dataRoot: 'C:\Users\abfernan\CrossCanFloodMapping\DatasetCNNFlood\C1Dataset\Percentage_1\'
-  - trainingDataList : ${dataRoot}\Percentage_1_feat1_min-annot1_trn.csv
-  - testingDataList: ${dataRoot}\Percentage_1_feat1_min-annot1_tst.csv
-  - validationDataList: ${dataRoot}
-  - standardizerSavePath : ${dataRoot}\standardizers.csv 
-  - _self_
+work_dir: ${hydra:runtime.cwd}
+projectRoot: C:\Users\abfernan\CrossCanFloodMapping\DL4Flood
+dataRoot: C:\Users\abfernan\CrossCanFloodMapping\DatasetCNNFlood\C1Dataset\Percentage_1\
+trainingDataList : ${dataRoot}\Percentage_1_feat1_min-annot1_trn.csv
+testingDataList: ${dataRoot}\Percentage_1_feat1_min-annot1_tst.csv
+validationDataList: ${dataRoot}
+standardizerSavePath : ${dataRoot}\standardizers.csv 
+parameter:
+ - trainingParams: \config\training\configTraining.yaml
