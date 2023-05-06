@@ -96,7 +96,10 @@ def removeCoordinatesFromDataSet(dataSet):
       print("DataSet has no coordinates to remove")
     return DSNoCoord
 
-def randomSamplingFromList(listeToSmpl, numberOfSmpl):
+def randomSamplingFromList(listeToSmpl, numberOfSmpl)->int:
+    '''
+    @Retiurn <numberOfSmpl> 0random index from <listeToSmpl>
+    '''
     return random.sample(listeToSmpl, numberOfSmpl)
 
 ### Modifying class domain
@@ -278,8 +281,9 @@ def createListFromCSVColumn(csv_file_location, col_idx:int, delim:str =','):
     '''       
     x=[]
     df = pd.read_csv(csv_file_location, index_col= None, delimiter = delim)
-    for i in df.iloc[:,col_idx]:
-        x.append(i)
+    fin = df.shape[0]
+    for i in range(0,fin):
+        x.append(df.iloc[i,col_idx])
     return x
 
 def createListFromExelColumn(excell_file_location,Sheet_id:str, col_idx:str):  

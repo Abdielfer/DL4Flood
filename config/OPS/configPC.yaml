@@ -10,8 +10,8 @@ config_path: ${hydra:runtime.config_sources}
 projectRoot: C:\Users\abfernan\CrossCanFloodMapping\DL4Flood
 
 dataRoot: C:\Users\abfernan\CrossCanFloodMapping\DatasetCNNFlood\C1Dataset\Percentage_1
-trainingDataList : ${dataRoot}\Percentage_1_feat1_min-annot1_trn.csv
-testingDataList: ${dataRoot}\Percentage_1_feat1_min-annot1_tst.csv
-validationDataList: ${dataRoot}
+trainingDataList : ${dataRoot}\SplitedTrainingSet.csv
+validationDataList: ${dataRoot}\SplitedValSet.csv
+testingDataList: ${dataRoot}
 permanentTransformetionSavePath : ${dataRoot}\trn
 standardizerSavePath : ${dataRoot}\standardizers.csv
