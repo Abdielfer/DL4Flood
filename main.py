@@ -56,17 +56,17 @@ class excecuteTraining():
 @hydra.main(version_base=None, config_path=f"config\OPS", config_name="configPC.yaml")
 def main(cfg: DictConfig):
     # ### Performe offline transformations
-    # transformer = applyPermanentTransformation(cfg)
-    # transformer.transform()
+    transformer = applyPermanentTransformation(cfg)
+    transformer.transform()
 
     ### Compute standardizers
     # MinMaxMeanSTD = computeStandardizers(cfg)
     # print(MinMaxMeanSTD)
     
     ## Training cycle
-    model, metric, losses = excecuteTraining(cfg)
-    name = model.name
-    U.saveModel(model, name)
+    # model, metric, losses = excecuteTraining(cfg)
+    # name = model.name
+    # U.saveModel(model, name)
 
 if __name__ == "__main__":
     with U.timeit():
