@@ -61,8 +61,8 @@ def main(cfg: DictConfig):
     U.createCSVFromList(cfg['validationDataList'],valList)
 
     # ### Performe offline transformations
-    # transformer = applyPermanentTransformation(cfg)
-    # transformer.transform()
+    transformer = applyPermanentTransformation(cfg)
+    transformer.transform()
 
     ### Compute standardizers
     # MinMaxMeanSTD = computeStandardizers(cfg)

@@ -1,16 +1,17 @@
 
 ## ~/config/OPS/configVelum.ymal
 parameter:
- - trainingParams: \config\training\configTraining.yaml
+ - trainingParams: /config/training/configTraining.yaml
 
 work_dir: ${hydra:runtime.cwd}  
 config_name: ${hydra:job.config_name}
 config_override_dirname: ${hydra:job.override_dirname}
 config_path: ${hydra:runtime.config_sources}
-projectRoot: C:\Users\abfernan\CrossCanFloodMapping\DL4Flood
-dataRoot: C:\Users\abfernan\CrossCanFloodMapping\DatasetCNNFlood\C1Dataset\Percentage_1\
-trainingDataList : ${dataRoot}\Percentage_1_feat1_min-annot1_trn.csv
-testingDataList: ${dataRoot}\Percentage_1_feat1_min-annot1_tst.csv
-validationDataList: ${dataRoot}
-csvName : CSVName.csv
-standardizerSavePath : ${dataRoot}${csvName}
+projectRoot: /home/abfernan/CrossCanFloodMap/DL4Flood/
+
+dataRoot:  /home/abfernan/CrossCanFloodMap/DatasetCNNFlood/C1Dataset 
+trainingDataList : ${dataRoot}/Percentage_1/SplitedTrainingSet.csv
+validationDataList: ${dataRoot}/Percentage_1/SplitedValSet.csv
+testingDataList: ${dataRoot}
+permanentTransformetionSavePath : ${dataRoot}\trn
+standardizerSavePath : ${dataRoot}\standardizers.csv
