@@ -21,6 +21,8 @@ class models_trainer(object):
         self.optimizer = optimizer
         self.metric_fn = metric
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        print(f"Is TorchCUbaAvailabe?? >>> {torch.cuda.is_available()}")
+        print(f"Active device :  {self.device}")
         self.model.to(self.device)
         self.writer = None
         self.train_losses = []
@@ -129,6 +131,7 @@ class models_trainer(object):
 
     def train(self, n_epochs, seed=42):
         self.set_seed(seed)
+
         for epoch in range(n_epochs):
             print(f"Epoch {epoch} ........ ->")
             self.total_epochs += 1
