@@ -5,7 +5,7 @@ from scr import dataLoader as D
 from scr import models_trainer as MT
 # from scr import losses as L
 from scr.losses import iou_binary,binaryAccuracy, lovasz_hinge 
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
 class computeStandardizers():
     def __init__(self, cfg:DictConfig) -> None:
@@ -35,26 +35,31 @@ class applyPermanentTransformation():
 
 class excecuteTraining():
     def __init__(self, cfg:DictConfig) -> None:
-        
-        fullSet = D.customDataSet(cfg['dataPath'])
-        trainSet, valSet = D.splitDataset(fullSet)
-        args = cfg['dataLoaderArgs']
-        train_set = D.customDataloader(trainSet,args)   
-        val_set = D.customDataloader(valSet,args)
-        model = cfg['model']
-        loss_fn = cfg['loss_fn'] 
-        losses = []
-        OptimizerParams = cfg['OptimizerParams']
-        optimizer = cfg['Optimizer']
-        optimizer = optimizer(model.parameters(), *OptimizerParams)
-        metric = cfg['metric']
+        args = cfg['parameters']
+        trainDataSet = D.customDataSet(cfg['trainingDataList'])
+        train_DLoader = D.customDataloader(trainDataSet,args['dataLoaderArgs'])   
+        valDataSet = D.customDataSet(cfg['validationDataList'])
+        val_DLoader = D.customDataloader(valDataSet,args['dataLoaderArgs'])
+        testDataSet = D.customDataSet(cfg['testingDataList'])
+        test_DLoader = D.createTransformation(testDataSet,args['dataLoaderArgs'])
+        model = args['model']
+        loss_fn = args['loss_fn']
+        optimizer = args['optimizer']
+        optimizer = optimizer(model.parameters(),args['optimizerParams'])
+        metric = args['metric_fn']
         trainer = MT.models_trainer(model,loss_fn,optimizer, metric)
-        trainer.set_loaders(train_set,val_set)
-        losses = []
-        return model, metric, losses
+        trainer.set_loaders(train_DLoader,val_DLoader,test_DLoader)
+        trainLosses, valLosses, testLosses = trainer.train(args['epochs'])
+        return model, metric, [trainLosses, valLosses, testLosses]
     
-@hydra.main(version_base=None, config_path=f"config\OPS", config_name="configPC.yaml")
+@hydra.main(version_base=None, config_path=f"config", config_name="configPC.yaml")
 def main(cfg: DictConfig):
+
+    ## Spliting Trn-Val
+    trnList, valList = U.splitPerRegion(cfg['rawDataList'])
+    U.createCSVFromList(cfg['trainingDataList'], trnList)
+    U.createCSVFromList(cfg['validationDataList'],valList)
+
     # ### Performe offline transformations
     # transformer = applyPermanentTransformation(cfg)
     # transformer.transform()
@@ -64,9 +69,10 @@ def main(cfg: DictConfig):
     # print(MinMaxMeanSTD)
     
     ## Training cycle
-    model, metric, losses = excecuteTraining(cfg)
-    name = model.name
-    U.saveModel(model, name)
+    # model, metric, losses = excecuteTraining(cfg)
+    # name = model.name
+    # U.saveModel(model, name)
+
 
 if __name__ == "__main__":
     with U.timeit():

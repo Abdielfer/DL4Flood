@@ -22,19 +22,20 @@ class models_trainer(object):
         self.metric_fn = metric
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model.to(self.device)
-        self.train_loader = None
-        self.val_loader = None
         self.writer = None
-        self.losses = []
+        self.train_losses = []
         self.val_losses = []
-        self.val_metrics = []  
+        self.val_metrics = [] 
+        self.test_losses = []
+        self.test_metric = [] 
         self.total_epochs = 0
-        self.train_step_fn = self._make_train_step_fn()
-        self.val_step_fn = self._make_val_step_fn()
-
-    def set_loaders(self, train_loader, val_loader=None):
+        
+    def set_loaders(self, train_loader: DL.customDataloader, 
+                    val_loader:DL.customDataloader = None,
+                    test_loader:DL.customDataloader = None):
         self.train_loader = train_loader
         self.val_loader = val_loader
+        self.test_loader = test_loader
 
     def getModel(self):
         return self.model   
@@ -68,24 +69,20 @@ class models_trainer(object):
         The argument `validation`defines which loader and 
         corresponding step function is going to be used
         '''
+        mini_batch_losses = []
         if validation:
             data_loader = self.val_loader
-            step_fn = self.val_step_fn
-
+            step_fn = self._make_val_step_fn()
         else:
             data_loader = self.train_loader
-            step_fn = self.train_step_fn
-
+            step_fn = self._make_train_step_fn()
         if data_loader is None:
             return None
-    
-        mini_batch_losses = []
         for x_batch, y_batch in data_loader:
             x_batch = x_batch.to(self.device)
             y_batch = y_batch.to(self.device).float()   ## Add .float() to avoid type conflict
             mini_batch_loss = step_fn(x_batch, y_batch)
             mini_batch_losses.append(mini_batch_loss)
-
         loss = np.mean(mini_batch_losses)
         return loss
     
@@ -108,7 +105,7 @@ class models_trainer(object):
         metricMean = round(np.mean(miniBathcMetric),2)
         return metricMean
     
-    def _computeMetricMiniBatch(self, data_loader):
+    def _computeMetricMiniBatch(self, data_loader)-> float:
         '''
         Return de mean per batch of the metric in self.metric  
         '''
@@ -118,11 +115,10 @@ class models_trainer(object):
         for x_batch, y_batch in data_loader:
             metric=[]
             for x,y in zip(x_batch, y_batch):
-                yHat = self.model(torch.unsqueeze(x,0))
-                y_hat_item = int(sigmoid(yHat[0]))
+                yHat = self.predict(x)
                 y_item= y.numpy() if torch.is_tensor(y) else y.numpy().squeeze()
-                y_hat_item = y_hat_item.detach().numpy().squeeze() if torch.is_tensor(y_hat_item) else y_hat_item.numpy().squeeze()
-                metric.append(self.metric_fn(y_hat_item, y_item))
+                # y_hat_item = y_hat_item.detach().numpy().squeeze() if torch.is_tensor(y_hat_item) else y_hat_item.numpy().squeeze()
+                metric.append(self.metric_fn(yHat, y_item))
             ItemMetric = np.mean(metric)
             print(f"ItemMetric : {ItemMetric}")
             miniBathcMetric.append(ItemMetric)
@@ -133,13 +129,12 @@ class models_trainer(object):
 
     def train(self, n_epochs, seed=42):
         self.set_seed(seed)
-
         for epoch in range(n_epochs):
             print(f"Epoch {epoch} ........ ->")
             self.total_epochs += 1
             loss = self._trainMiniBatch(validation=False)
             print(f"train Loss = {loss}")
-            self.losses.append(loss)
+            self.train_losses.append(loss)
             with torch.no_grad():
                 # Performs evaluation using mini-batches
                 val_loss = self._trainMiniBatch(validation=True)
@@ -147,8 +142,15 @@ class models_trainer(object):
                 self.val_losses.append(val_loss)
                 metric = self._computeMetricPerMiniBatch(self.val_loader)
                 self.val_metrics.append(metric)
-                print(f"Metric(s) per minibatch = {metric}")
-
+                print(f"Val Metric(s) per minibatch = {metric}")
+                if self.test_loader is not None:
+                    test_loss = self._trainMiniBatch(validation=True)
+                    print(f"Test Loss = {test_loss}")
+                    self.test_losses.append(test_loss)
+                    testMetric = self._computeMetricPerMiniBatch(self.test_loader)
+                    self.test_metric.append(testMetric) 
+                print(f"Test Metric(s) per minibatch = {testMetric}")
+                
             # If a SummaryWriter has been set...
             if self.writer:
                 scalars = {'training': loss}
@@ -166,13 +168,16 @@ class models_trainer(object):
         if self.writer:
             # Closes the writer
             self.writer.close()
+  
+        return self.train_losses, self.val_losses, self.test_losses 
+
 
     def save_checkpoint(self, filename):
         # Builds dictionary with all elements for resuming training
         checkpoint = {'epoch': self.total_epochs,
                       'model_state_dict': self.model.state_dict(),
                       'optimizer_state_dict': self.optimizer.state_dict(),
-                      'loss': self.losses,
+                      'loss': self.train_losses,
                       'val_loss': self.val_losses,
                       'validation_metric': self.val_metrics}
         torch.save(checkpoint, filename)
@@ -184,7 +189,7 @@ class models_trainer(object):
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         self.total_epochs = checkpoint['epoch']
-        self.losses = checkpoint['loss']
+        self.train_losses = checkpoint['loss']
         self.val_losses = checkpoint['val_loss']
         self.model.train() # always use TRAIN for resuming training   
 
@@ -194,6 +199,7 @@ class models_trainer(object):
         '''
         self.model.eval() 
         # Takes aNumpy input and make it a float tensor
+        x_item = x.detach().numpy().squeeze() if torch.is_tensor(x) else x.numpy().squeeze()
         x_tensor = torch.as_tensor(x).float()
         # Send input to device and uses model for prediction
         y_hat_tensor = self.model(x_tensor.to(self.device))
@@ -205,15 +211,15 @@ class models_trainer(object):
 
     def plot_losses(self):
         fig = plt.figure(figsize=(10, 4))
-        plt.plot(self.losses, label='Training Loss', c='b')
+        plt.plot(self.train_losses, label='Training Loss', c='b')
         plt.plot(self.val_losses, label='Validation Loss', c='r')
+        plt.plot(self.test_losses, label='Test Loss', c='g')
         plt.yscale('log')
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
         plt.legend()
         plt.tight_layout()
         return fig
-   
    
     def set_seed(self, seed=42):
         torch.backends.cudnn.deterministic = True

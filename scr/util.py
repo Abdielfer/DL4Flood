@@ -102,6 +102,57 @@ def randomSamplingFromList(listeToSmpl, numberOfSmpl)->int:
     '''
     return random.sample(listeToSmpl, numberOfSmpl)
 
+def splitPerRegion(csvPath, tstFrac:float = .9)->list:
+    fullList = createListFromCSV(csvPath) 
+    imagList = createListFromCSVColumn(csvPath,0,delim=';')
+    lenimagList = len(imagList)
+    print("Total samples >>", len(imagList))
+    parent,_,_ = get_parenPath_name_ext(imagList[0])
+    start = parent
+    print(f"First assignement: {start != parent} \n {start}\n{parent}")
+    print(f"{start != parent} >> {start}>{parent}")
+    regionCounter = 0
+    lastParent,_,_ = get_parenPath_name_ext(imagList[-1])
+    allPath = []
+    trn = []
+    tst = []
+    i = 0
+    while start == parent:
+        parent,_,_ = get_parenPath_name_ext(imagList[i])
+        if start != parent:
+            regionCounter+=1
+            trnToAdd, tstToAdd = distrubutePathInTrnTst(allPath,tstFrac)
+            trn.extend(trnToAdd)
+            tst.extend(tstToAdd)
+            # print(f"Training set evolution : {len(trn)} vs Teste set {len(tst)} >> Total {len(trn)+len(tst)}")
+            # print("_____________________________")
+            start = parent
+            allPath = []
+            if start == lastParent:
+                regionCounter+=1
+                allPath = imagList[i:-1]
+                trnToAdd, tstToAdd = distrubutePathInTrnTst(allPath,tstFrac)
+                trn.extend(trnToAdd)
+                tst.extend(tstToAdd)
+                # print(f"Training set evolution : {len(trn)} vs Teste set {len(tst)} >> Total {len(trn)+len(tst)}")
+                print(f"We finished sampling {regionCounter} regions")
+                break
+            continue
+        allPath.append(fullList[i])
+        i +=1
+        if i == lenimagList: break
+    return trn,tst
+
+def distrubutePathInTrnTst(allPath,trnPercent)->list:
+    trnPErcent = int(len(allPath)*.9)
+    srandomSamples = randomSamplingFromList(allPath,trnPErcent) 
+    trn, tst = [],[]
+    for item in srandomSamples:
+        trn.append(allPath.pop(allPath.index(item)))
+    tst = allPath
+    return trn,tst
+
+
 ### Modifying class domain
 def pseudoClassCreation(dataset, conditionVariable, threshold, pseudoClass, targetColumnName):
     '''
@@ -345,6 +396,7 @@ def createCSVFromList(pathToSave: os.path, listData:list):
         for line in listData:
             output.write(str(line) + '\n')
     read_file = pd.read_csv (textPath)
+    print(f'Creating CSV at {pathToSave}')
     read_file.to_csv (pathToSave, index=None)
     removeFile(textPath)
     return True

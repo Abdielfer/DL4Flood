@@ -1,17 +1,13 @@
-## ~/config/OPS/configMac.ymal
-
 parameter:
- - trainingParams: \config\training\configTraining.yaml
-
-work_dir: ${hydra:runtime.cwd}  # where the code is executed
+- trainingParams: \config\training\configTraining.yaml
+work_dir: ${hydra:runtime.cwd}
 config_name: ${hydra:job.config_name}
 config_override_dirname: ${hydra:job.override_dirname}
 config_path: ${hydra:runtime.config_sources}
 projectRoot: C:\Users\abfernan\CrossCanFloodMapping\DL4Flood
-
 dataRoot: C:\Users\abfernan\CrossCanFloodMapping\DatasetCNNFlood\C1Dataset\Percentage_1
-trainingDataList : ${dataRoot}\SplitedTrainingSet.csv
+trainingDataList: ${dataRoot}\SplitedTrainingSetPlusRotated.csv
 validationDataList: ${dataRoot}\SplitedValSet.csv
-testingDataList: ${dataRoot}
-permanentTransformetionSavePath : ${dataRoot}\trn
-standardizerSavePath : ${dataRoot}\standardizers.csv
+testingDataList: ${dataRoot}\Percentage_1_testSet\Percentage_1_testSet_feat1_min-annot1_trn.csv
+permanentTransformetionSavePath: ${dataRoot}\trn
+standardizerSavePath: ${dataRoot}\standardizers.csv

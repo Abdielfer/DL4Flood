@@ -1,13 +1,17 @@
 
-### ~/config.yaml
+### ~\config\parameters\configTraining.yaml
+
 targetColName: percentage
+epochs : 1 
 dataLoaderArgs :  {'batch_size': 1, 'num_workers': 4,'drop_last': True}
-model: UNetFlood
+model: model_set.models.UNetFlood
 modelMode: train
-loss: lovasz_hinge
+loss_fn: scr.losses.lovasz_hinge
+metric_fn : scr.losses.iou_binary
 optimizer: Adam
-OptimizerParams : {'lr': 0.001}
+optimizerParams : {'lr': 0.001}
 scheduler: plateau
+makeTest: True
 hydra: default
 override hydra/hydra_logging: colorlog # enable color logging to make it pretty
 override hydra/job_logging: colorlog # enable color logging to make it pretty
