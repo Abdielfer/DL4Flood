@@ -10,6 +10,7 @@ config_path: ${hydra:runtime.config_sources}
 projectRoot: /home/abfernan/CrossCanFloodMap/DL4Flood/
 
 dataRoot:  /home/abfernan/CrossCanFloodMap/DatasetCNNFlood/C1Dataset 
+rawDataList: ${dataRoot}/Percentage_1/Percentage_1_feat1_min-annot1_trn.csv
 trainingDataList : ${dataRoot}/Percentage_1/SplitedTrainingSet.csv
 validationDataList: ${dataRoot}/Percentage_1/SplitedValSet.csv
 testingDataList: ${dataRoot}
