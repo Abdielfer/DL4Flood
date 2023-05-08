@@ -101,10 +101,11 @@ def main(cfg: DictConfig):
     # print(MinMaxMeanSTD)
     
     ## Training cycle
-    model,losses = excecuteTrainingVelum(cfg)
-    # model, metric, losses = excecuteTraining(cfg)
-    name = model.name
-    U.saveModel(model, name)
+    excecuteTrainingVelum(cfg)
+    # model,losses = excecuteTrainingVelum(cfg)
+    # # model, metric, losses = excecuteTraining(cfg)
+    # name = model.name
+    # U.saveModel(model, name)
 
 
 if __name__ == "__main__":
