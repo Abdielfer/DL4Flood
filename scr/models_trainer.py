@@ -6,7 +6,7 @@
 import numpy as np
 import datetime
 import torch
-from torch.nn.functional import sigmoid
+# model.add(layers.Dense(64, activation=opt))
 import matplotlib.pyplot as plt
 from scr import dataLoader as DL
 from torch.utils.tensorboard import SummaryWriter
@@ -97,7 +97,7 @@ class models_trainer(object):
             metric=[]
             for x,y in zip(x_batch, y_batch):
                 yHat = self.model(torch.unsqueeze(x,0))
-                y_hat_sigmoid = torch.round(sigmoid(yHat)).to(torch.int32)
+                y_hat_sigmoid = torch.round(torch.sigmoid(yHat)).to(torch.int32)
                 y_item= y.numpy() if torch.is_tensor(y) else y.numpy().squeeze()
                 y_hat_item = y_hat_sigmoid.detach().cpu().numpy().squeeze() if torch.is_tensor(y_hat_sigmoid) else y_hat_sigmoid.numpy().squeeze()
                 metricPerImage = self.metric_fn(y_hat_item, y_item)
@@ -209,7 +209,7 @@ class models_trainer(object):
         # Set it back to train mode
         self.model.train()
         # Detaches it, brings it to CPU and back to Numpy
-        mask = torch.round(sigmoid(y_hat_tensor)).to(torch.int32)
+        mask = torch.round(torch.sigmoid(y_hat_tensor)).to(torch.int32)
         return mask.detach().cpu().numpy()
 
     def plot_losses(self):
