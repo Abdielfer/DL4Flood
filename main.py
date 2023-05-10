@@ -49,18 +49,18 @@ class excecuteTrainingVelum():
         train_DLoader = D.customDataloader(trainDataSet,args)   
         valDataSet = D.customDataSet(valSetList)
         val_DLoader = D.customDataloader(valDataSet,args)
-        testDataSet = D.customDataSet(testSetList)
-        test_DLoader = D.createTransformation(testDataSet,args)
+        # testDataSet = D.customDataSet(testSetList)
+        # test_DLoader = D.createTransformation(testDataSet,args)
         
         model = UNetFlood(1,1)
         loss_fn = L.lovasz_hinge
         optimizer = Adam(model.parameters(), lr = 0.001) #SGD(model.parameters(), lr=0.001, momentum=0.9)##  
         
         trainer = MT.models_trainer(model,loss_fn,optimizer, iou_binary)
-        trainer.set_loaders(train_DLoader,val_DLoader,test_DLoader)
+        trainer.set_loaders(train_DLoader,val_DLoader)
         
-        trainLosses, valLosses, testLosses = trainer.train(2)
-        return model, [trainLosses, valLosses, testLosses]
+        trainLosses, valLosses, _ = trainer.train(2)
+        return model, [trainLosses, valLosses, _]
                     
 
 class excecuteTraining():
@@ -84,7 +84,7 @@ class excecuteTraining():
         # return model, metric, [trainLosses, valLosses, testLosses]
         print("model >>","\n", model )
     
-@hydra.main(version_base=None, config_path=f"config", config_name="configPC.yaml")
+@hydra.main(version_base=None, config_path=f"config", config_name="configMac.yaml")
 def main(cfg: DictConfig):
 
     # ## Spliting Trn-Val
