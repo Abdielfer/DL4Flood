@@ -21,8 +21,8 @@ class models_trainer(object):
         self.optimizer = optimizer
         self.metric_fn = metric
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        print(f"Is TorchCUbaAvailabe?? >>> {torch.cuda.is_available()}")
-        print(f"Active device :  {self.device}")
+        print(f"Is TorchCudaAvailabe?? >>> {torch.cuda.is_available()}-> Active device :  {self.device}")
+        print(f"Actual metric {self.metric_fn}")
         self.model.to(self.device)
         self.writer = None
         self.train_losses = []
@@ -32,7 +32,8 @@ class models_trainer(object):
         self.test_metric = [] 
         self.total_epochs = 0
         
-    def set_loaders(self, train_loader: DL.customDataloader, 
+    def set_loaders(self, 
+                    train_loader: DL.customDataloader, 
                     val_loader:DL.customDataloader = None,
                     test_loader:DL.customDataloader = None):
         self.train_loader = train_loader
@@ -65,7 +66,7 @@ class models_trainer(object):
             return item
         return perform_val_step_fn
             
-    def _trainMiniBatch(self, validation=False):
+    def _computeLossMeanPerMiniBatch(self, validation=False):
         '''
         The mini-batch can be used with both loaders
         The argument `validation`defines which loader and 
@@ -87,6 +88,22 @@ class models_trainer(object):
             mini_batch_losses.append(mini_batch_loss)
         loss = np.mean(mini_batch_losses)
         return loss
+    
+    def _computeLossMeanTestSet(self):
+        '''
+        The mini-batch can be used with both loaders
+        The argument `validation`defines which loader and 
+        corresponding step function is going to be used
+        '''
+        mini_batch_losses = []
+        step_fn = self._make_val_step_fn()
+        dataLoader = self.test_loader
+        for x_batch, y_batch in dataLoader:
+            x_batch = x_batch.to(self.device)
+            y_batch = y_batch.to(self.device).float()   ## Add .float() to avoid type conflict
+            mini_batch_loss = step_fn(x_batch, y_batch)
+            mini_batch_losses.append(mini_batch_loss)
+        return np.mean(mini_batch_losses)
     
     def _computeMetricPerMiniBatch(self, data_loader):
         '''
@@ -112,47 +129,45 @@ class models_trainer(object):
         Return de mean per batch of the metric in self.metric  
         '''
         metrics = {}
-        print(f"Actual metric {self.metric_fn}")
         miniBathcMetric = []
         for x_batch, y_batch in data_loader:
             metric=[]
             for x,y in zip(x_batch, y_batch):
                 yHat = self.predict(x)
-                y_item= y.numpy() if torch.is_tensor(y) else y.numpy().squeeze()
+                y_item= y.detach().cpu().numpy() if torch.is_tensor(y) else y.squeeze().detach().cpu()
                 # y_hat_item = y_hat_item.detach().numpy().squeeze() if torch.is_tensor(y_hat_item) else y_hat_item.numpy().squeeze()
                 metric.append(self.metric_fn(yHat, y_item))
             ItemMetric = np.mean(metric)
-            print(f"ItemMetric : {ItemMetric}")
+            # print(f"ItemMetric : {ItemMetric}")
             miniBathcMetric.append(ItemMetric)
-        print(f"miniBathcMetric : {miniBathcMetric} ")
+        # print(f"miniBathcMetric : {miniBathcMetric} ")
         metricMean = np.mean(miniBathcMetric)
         metrics[str(self.metric_fn)] = metricMean
         return metricMean
 
     def train(self, n_epochs, seed=42):
         self.set_seed(seed)
-
         for epoch in range(n_epochs):
             print(f"Epoch {epoch} ........ ->")
             self.total_epochs += 1
-            loss = self._trainMiniBatch(validation=False)
+            loss = self._computeLossMeanPerMiniBatch(validation=False)
             print(f"train Loss = {loss}")
             self.train_losses.append(loss)
             with torch.no_grad():
                 # Performs evaluation using mini-batches
-                val_loss = self._trainMiniBatch(validation=True)
+                val_loss = self._computeLossMeanPerMiniBatch(validation=True)
                 print(f"val Loss = {val_loss}")
                 self.val_losses.append(val_loss)
-                metric = self._computeMetricPerMiniBatch(self.val_loader)
+                metric = self._computeMetricMiniBatch(self.val_loader)
                 self.val_metrics.append(metric)
                 print(f"Val Metric(s) per minibatch = {metric}")
                 if self.test_loader is not None:
-                    test_loss = self._trainMiniBatch(validation=True)
+                    test_loss = self._computeLossMeanTestSet()
                     print(f"Test Loss = {test_loss}")
                     self.test_losses.append(test_loss)
-                    testMetric = self._computeMetricPerMiniBatch(self.test_loader)
-                    self.test_metric.append(testMetric) 
-                print(f"Test Metric(s) per minibatch = {testMetric}")
+                    testMetric = self._computeMetricMiniBatch(self.test_loader)
+                    self.test_metric.append(testMetric)
+                    print(f"Test Metric(s) per minibatch = {testMetric}")
                 
             # If a SummaryWriter has been set...
             if self.writer:
@@ -167,11 +182,13 @@ class models_trainer(object):
                 self.writer.add_scalars(main_tag='metric',
                                         # tag_scalar_dict=metricSaclar,
                                         global_step=epoch)  
-        self.plot_losses()
+        
         if self.writer:
             # Closes the writer
             self.writer.close()
   
+        self.plot_losses()
+        
         return self.train_losses, self.val_losses, self.test_losses 
 
 
@@ -196,17 +213,12 @@ class models_trainer(object):
         self.val_losses = checkpoint['val_loss']
         self.model.train() # always use TRAIN for resuming training   
 
-    def predict(self, x):
+    def predict(self, x)-> np.array:
         '''
         @Return: A 0-1 mask as np.array. 
         '''
-        self.model.eval() 
-        # Takes aNumpy input and make it a float tensor
-        x_item = x.detach().numpy().squeeze() if torch.is_tensor(x) else x.numpy().squeeze()
-        x_tensor = torch.as_tensor(x).float()
-        # Send input to device and uses model for prediction
-        y_hat_tensor = self.model(x_tensor.to(self.device))
-        # Set it back to train mode
+        self.model.eval()
+        y_hat_tensor = self.model(torch.unsqueeze(x,0).to(self.device))
         self.model.train()
         # Detaches it, brings it to CPU and back to Numpy
         mask = torch.round(torch.sigmoid(y_hat_tensor)).to(torch.int32)

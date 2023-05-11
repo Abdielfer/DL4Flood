@@ -51,14 +51,14 @@ class excecuteTrainingVelum():
         valDataSet = D.customDataSet(valSetList)
         val_DLoader = D.customDataloader(valDataSet,args)
         testDataSet = D.customDataSet(testSetList)
-        test_DLoader = D.createTransformation(testDataSet,args)
+        test_DLoader = D.customDataloader(testDataSet,args)
         
         model = UNetFlood(1,1)
         loss_fn = L.lovasz_hinge
         optimizer = Adam(model.parameters(), lr = 0.001) #SGD(model.parameters(), lr=0.001, momentum=0.9)##  
         
         trainer = MT.models_trainer(model,loss_fn,optimizer, iou_binary)
-        trainer.set_loaders(train_DLoader,val_DLoader)
+        trainer.set_loaders(train_DLoader,val_DLoader,test_DLoader)
         
         trainLosses, valLosses, testLosses = trainer.train(2)
         return model, [trainLosses, valLosses, testLosses]
@@ -102,8 +102,7 @@ def main(cfg: DictConfig):
     # print(MinMaxMeanSTD)
     
     ## Training cycle
-    excecuteTrainingVelum(cfg)
-    # model,losses = excecuteTrainingVelum(cfg)
+    model,losses = excecuteTrainingVelum(cfg)
     # # model, metric, losses = excecuteTraining(cfg)
     # name = model.name
     # U.saveModel(model, name)
