@@ -1,6 +1,6 @@
-import hydra 
+import hydra
 from hydra.utils import instantiate
-#from model_set.models import UNetFlood
+from model_set.models import UNetFlood
 from scr import util as U
 from scr import dataLoader as D
 from scr import models_trainer as MT
@@ -65,7 +65,29 @@ class excecuteTraining():
         self.trainer.plot_losses()
         return self.model, [trainLosses, valLosses, testLosses]
 
-@hydra.main(version_base=None, config_path=f"config", config_name="configPC.yaml")
+
+class excecuteTraining():
+    def __init__(self, cfg:DictConfig) -> None:
+        model = OmegaConf.create(cfg.parameters.model)
+        print(model)
+        # trainDataSet = D.customDataSet(cfg['trainingDataList'])
+        # train_DLoader = D.customDataloader(trainDataSet,args['dataLoaderArgs'])   
+        # valDataSet = D.customDataSet(cfg['validationDataList'])
+        # val_DLoader = D.customDataloader(valDataSet,args['dataLoaderArgs'])
+        # testDataSet = D.customDataSet(cfg['testingDataList'])
+        # test_DLoader = D.createTransformation(testDataSet,args['dataLoaderArgs'])
+        model = instantiate(model)
+        # loss_fn = instantiate(cfg.model)
+        # optimizer = args['optimizer']
+        # optimizer = optimizer(model.parameters(),args['optimizerParams'])
+        # metric = instantiate(cfg.metric_fn)
+        # trainer = MT.models_trainer(model,loss_fn,optimizer, metric)
+        # trainer.set_loaders(train_DLoader,val_DLoader,test_DLoader)
+        # trainLosses, valLosses, testLosses = trainer.train(args['epochs'])
+        # return model, metric, [trainLosses, valLosses, testLosses]
+        print("model >>","\n", model )
+    
+@hydra.main(version_base=None, config_path=f"config", config_name="configMac.yaml")
 def main(cfg: DictConfig):
     # ## Spliting Trn-Val
     # trnList, valList = U.splitPerRegion(cfg['rawDataList'])
@@ -81,14 +103,12 @@ def main(cfg: DictConfig):
     # print(MinMaxMeanSTD)
     
     ## Training cycle
-    nameByTime = U.makeNameByTime()
-    logging.info(f"Model saved as :{nameByTime}")
-    logging.info(cfg.parameters.model)
-    logging.info(cfg.parameters.loss_fn)
-    logging.info(cfg.parameters.optimizer)
-    trainer = excecuteTraining(cfg)
-    model,_ = trainer.excecute(cfg.parameters['epochs'])
-    U.saveModel(model,nameByTime)
+    # trainer = excecuteTrainingVelum(cfg)
+    # model, losses = trainer.excecute()
+    excecuteTraining(cfg)
+    # # model, metric, losses = excecuteTraining(cfg)
+    # name = model.name
+    # U.saveModel(model, name)
 
 
 if __name__ == "__main__":
