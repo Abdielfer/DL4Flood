@@ -147,6 +147,7 @@ class models_trainer(object):
 
     def train(self, n_epochs, seed=42):
         self.set_seed(seed)
+        
         for epoch in range(n_epochs):
             print(f"Epoch {epoch} ........ ->")
             self.total_epochs += 1

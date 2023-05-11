@@ -45,21 +45,21 @@ class excecuteTrainingVelum():
         testSetList = cfg['testingDataList']
 
         args = {'batch_size': 1, 'num_workers': 4,'drop_last': True}
-        trainDataSet = D.customDataSet(trainSetList)
-        self.train_DLoader = D.customDataloader(trainDataSet,args)   
-        valDataSet = D.customDataSet(valSetList)
-        self.val_DLoader = D.customDataloader(valDataSet,args)
-        testDataSet = D.customDataSet(testSetList)
-        self.test_DLoader = D.customDataloader(testDataSet,args)
+        self.trainDataSet = D.customDataSet(trainSetList)
+        self.train_DLoader = D.customDataloader(self.trainDataSet,args)   
+        self.valDataSet = D.customDataSet(valSetList)
+        self.val_DLoader = D.customDataloader(self.valDataSet,args)
+        self.testDataSet = D.customDataSet(testSetList)
+        self.test_DLoader = D.customDataloader(self.testDataSet,args)
         
         self.model = UNetFlood(1,1)
         self.loss_fn = L.lovasz_hinge
         self.optimizer = Adam(self.model.parameters(), lr = 0.001) #SGD(model.parameters(), lr=0.001, momentum=0.9)##  
-    
-    def excecute(self):
+       
+    def excecute(self,epochs):
         trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, iou_binary)
         trainer.set_loaders(self.train_DLoader,self.val_DLoader,self.test_DLoader)
-        trainLosses, valLosses, testLosses = trainer.train(2)
+        trainLosses, valLosses, testLosses = trainer.train(epochs)
         return self.model, [trainLosses, valLosses, testLosses]
 
 
@@ -102,7 +102,8 @@ def main(cfg: DictConfig):
     
     ## Training cycle
     trainer = excecuteTrainingVelum(cfg)
-    model, losses = trainer.excecute()
+    model, losses = trainer.excecute(2)
+    print(losses)
     # # model, metric, losses = excecuteTraining(cfg)
     # name = model.name
     # U.saveModel(model, name)

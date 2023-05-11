@@ -224,7 +224,7 @@ class UNetFlood(nn.Module):
     @in_channels: Number of channels in the input image. 
     """
 
-    def __init__(self, classes, in_channels, dropout=False, prob=0.2):
+    def __init__(self, classes, in_channels, dropout=False, prob:float = 0.5):
         super().__init__()
         self.classes = classes
         self.conv1 = EncodingBlockFlood(in_channels, 64, dropout=dropout, prob=prob)
@@ -244,6 +244,7 @@ class UNetFlood(nn.Module):
         self.decode1 = DecodingBlockFlood(128, 64)
 
         self.final = nn.Conv2d(64, classes, kernel_size=1)
+        
 
     def forward(self, input_data):
         # print('Encoding______')
@@ -280,7 +281,9 @@ class UNetFlood(nn.Module):
         selfFinal = self.final(decode1)
         # print('self.final(decode1) shape', selfFinal.shape)
         # print('input_data.size()[2:] shape', input_data.size()[2:])
+        
         final = nn.functional.interpolate(selfFinal, input_data.size()[2:], mode='bilinear', align_corners=True)
+    
         # print('Final shape after interpolating self.final(decode1), input_data.size()[2:]:', final.shape)
         
         return final

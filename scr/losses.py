@@ -24,8 +24,8 @@ def lovasz_grad(gt_sorted):
     """
     p = len(gt_sorted)
     gts = gt_sorted.sum()
-    intersection = gts - gt_sorted.float().cumsum(0)
-    union = gts + (1 - gt_sorted).float().cumsum(0)
+    intersection = gts - gt_sorted.float().cumsum(0)+ 0.00001
+    union = gts + (1 - gt_sorted).float().cumsum(0) + 0.00001
     jaccard = 1. - intersection / union
     if p > 1: # cover 1-pixel case
         jaccard[1:p] = jaccard[1:p] - jaccard[0:-1]
@@ -195,7 +195,7 @@ def lovasz_softmax_flat(probas, labels, classes='present'):
     class_to_sum = list(range(C)) if classes in ['all', 'present'] else classes
     for c in class_to_sum:
         fg = (labels == c).float() # foreground for class c
-        if (classes is 'present' and fg.sum()==0):
+        if (classes is 'present') and (fg.sum()==0):
             continue
         if C == 1:
             if len(classes) > 1:
