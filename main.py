@@ -40,29 +40,28 @@ class applyPermanentTransformation():
 
 class excecuteTrainingVelum():
     def __init__(self, cfg:DictConfig) -> None:
-
         trainSetList = cfg['trainingDataList']
         valSetList = cfg['validationDataList']
         testSetList = cfg['testingDataList']
 
         args = {'batch_size': 1, 'num_workers': 4,'drop_last': True}
         trainDataSet = D.customDataSet(trainSetList)
-        train_DLoader = D.customDataloader(trainDataSet,args)   
+        self.train_DLoader = D.customDataloader(trainDataSet,args)   
         valDataSet = D.customDataSet(valSetList)
-        val_DLoader = D.customDataloader(valDataSet,args)
+        self.val_DLoader = D.customDataloader(valDataSet,args)
         testDataSet = D.customDataSet(testSetList)
-        test_DLoader = D.customDataloader(testDataSet,args)
+        self.test_DLoader = D.customDataloader(testDataSet,args)
         
-        model = UNetFlood(1,1)
-        loss_fn = L.lovasz_hinge
-        optimizer = Adam(model.parameters(), lr = 0.001) #SGD(model.parameters(), lr=0.001, momentum=0.9)##  
-        
-        trainer = MT.models_trainer(model,loss_fn,optimizer, iou_binary)
-        trainer.set_loaders(train_DLoader,val_DLoader,test_DLoader)
-        
+        self.model = UNetFlood(1,1)
+        self.loss_fn = L.lovasz_hinge
+        self.optimizer = Adam(self.model.parameters(), lr = 0.001) #SGD(model.parameters(), lr=0.001, momentum=0.9)##  
+    
+    def excecute(self):
+        trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, iou_binary)
+        trainer.set_loaders(self.train_DLoader,self.val_DLoader,self.test_DLoader)
         trainLosses, valLosses, testLosses = trainer.train(2)
-        return model, [trainLosses, valLosses, testLosses]
-                    
+        return self.model, [trainLosses, valLosses, testLosses]
+
 
 class excecuteTraining():
     def __init__(self, cfg:DictConfig) -> None:
@@ -102,7 +101,8 @@ def main(cfg: DictConfig):
     # print(MinMaxMeanSTD)
     
     ## Training cycle
-    model,losses = excecuteTrainingVelum(cfg)
+    trainer = excecuteTrainingVelum(cfg)
+    model, losses = trainer.excecute()
     # # model, metric, losses = excecuteTraining(cfg)
     # name = model.name
     # U.saveModel(model, name)
