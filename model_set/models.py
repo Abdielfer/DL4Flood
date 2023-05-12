@@ -210,7 +210,15 @@ class EncodingBlockFlood(nn.Module):
 
         self.EncodingBlock = nn.Sequential(*layers)
 
-    def forward(self, input_data):
+    def fnToApply(nodel):
+            
+        pass
+
+    def forward(self, input_data, fn=None):
+        if fn is not None:
+            self.EncodingBlock.apply(fn)   
+            output = self.EncodingBlock(input_data)
+            return output
         output = self.EncodingBlock(input_data)
         return output
 
@@ -244,7 +252,7 @@ class UNetFlood(nn.Module):
         self.decode1 = DecodingBlockFlood(128, 64)
 
         self.final = nn.Conv2d(64, classes, kernel_size=1)
-        
+
 
     def forward(self, input_data):
         # print('Encoding______')

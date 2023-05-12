@@ -530,9 +530,9 @@ def makePredictionToImportAsSHP(model, x_test, y_test, targetColName):
     return ds_toSHP
 
 def imageToTensor(img,DTYPE:str = 'float32'):
-    imagTensor = np.nan_to_num(img, copy=False).astype(DTYPE)
+    imagTensor = img.astype(DTYPE)
     # imagTensor = np.transpose(imagTensor, (2, 0, 1)).astype(DTYPE)
-    imagTensor = torch.from_numpy(imagTensor)
+    imagTensor = torch.tensor(imagTensor)
     return imagTensor
 
 def reshape_as_image(arr):

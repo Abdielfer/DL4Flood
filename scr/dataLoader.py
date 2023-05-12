@@ -32,11 +32,15 @@ class customDataSet(Dataset):
         with rio.open(mask_path, 'r') as label:
             mask = label.read()
             # print('mask shape at read time', mask.shape) 
+        
+        img, mask = self.__Standardization__(img,mask, mean=155, std= 194.2)
+
         if self.inLineTransformation:
             img, mask = self.__inlineTranformation__(img,mask)
+        
         img = U.imageToTensor(img)
         # print('img shape at dataLoader delivery time', img.shape)
-        mask = U.imageToTensor(mask, 'int64')
+        mask = U.imageToTensor(mask) # torch.tensor(mask, dtype=torch.int16)
         # print('mask shape at dataLoader delivery time', mask.shape)
         return img, mask
 
@@ -45,6 +49,11 @@ class customDataSet(Dataset):
         verify if imag_list and mask_list have same len and names(img-mask) matchs. 
         '''
         pass 
+
+    def __Standardization__(self,img,mask,mean,std):
+        imgStd = (img - mean)/std
+        maskStd = (mask - mean)/std
+        return imgStd, maskStd
 
     def __inlineTranformation__(self,imag,mask):
         '''

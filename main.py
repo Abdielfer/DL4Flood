@@ -10,6 +10,7 @@ from scr.losses import iou_binary,binaryAccuracy, lovasz_hinge
 from omegaconf import DictConfig, OmegaConf
 from torch.optim import Adam, SGD
 import torch
+from torch.nn import MSELoss
 
 class computeStandardizers():
     def __init__(self, cfg:DictConfig) -> None:
@@ -53,8 +54,8 @@ class excecuteTrainingVelum():
         self.test_DLoader = D.customDataloader(self.testDataSet,args)
         
         self.model = UNetFlood(1,1)
-        self.loss_fn = L.lovasz_hinge
-        self.optimizer = Adam(self.model.parameters(), lr = 0.001) #SGD(model.parameters(), lr=0.001, momentum=0.9)##  
+        self.loss_fn = lovasz_hinge   #  MSELoss()
+        self.optimizer = Adam(self.model.parameters(), lr = 0.0005)#SGD(self.model.parameters(), lr=0.0000001, momentum=0.9)   ####  
        
     def excecute(self,epochs):
         trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, iou_binary)
@@ -102,7 +103,7 @@ def main(cfg: DictConfig):
     
     ## Training cycle
     trainer = excecuteTrainingVelum(cfg)
-    model, losses = trainer.excecute(2)
+    model, losses = trainer.excecute(20)
     print(losses)
     # # model, metric, losses = excecuteTraining(cfg)
     # name = model.name

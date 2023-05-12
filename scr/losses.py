@@ -7,7 +7,6 @@ From: https://github.com/bermanmaxim/LovaszSoftmax/blob/master/pytorch/lovasz_lo
 
 from __future__ import print_function, division
 import torch
-from torch.autograd import Variable
 import torch.nn.functional as F
 from torcheval.metrics.functional import binary_accuracy
 import numpy as np
@@ -24,8 +23,8 @@ def lovasz_grad(gt_sorted):
     """
     p = len(gt_sorted)
     gts = gt_sorted.sum()
-    intersection = gts - gt_sorted.float().cumsum(0)+ 0.000001
-    union = gts + (1 - gt_sorted).float().cumsum(0) + 0.000001
+    intersection = gts - gt_sorted.float().cumsum(0)
+    union = gts + (1 - gt_sorted).float().cumsum(0)
     jaccard = 1. - intersection / union
     if p > 1: # cover 1-pixel case
         jaccard[1:p] = jaccard[1:p] - jaccard[0:-1]
@@ -103,12 +102,12 @@ def lovasz_hinge_flat(logits, labels):
         # only void pixels, the gradients should be 0
         return logits.sum() * 0.
     signs = 2. * labels.float() - 1.
-    errors = (1. - logits * Variable(signs))
+    errors = (1. - logits * signs.requires_grad_(True))
     errors_sorted, perm = torch.sort(errors, dim=0, descending=True)
     perm = perm.data  ## perm: are the index in the original erros tensor. Is used to sorte the ground truth in the next line
     gt_sorted = labels[perm]
     grad = lovasz_grad(gt_sorted)
-    loss = torch.dot(F.relu(errors_sorted), Variable(grad))
+    loss = torch.dot(F.relu(errors_sorted), grad.requires_grad_(True))
     return loss
 
 
@@ -146,7 +145,6 @@ class StableBCELoss(torch.nn.modules.Module):
          loss = input.clamp(min=0) - input * target + (1 + neg_abs.exp()).log()
          return loss.mean()
 
-
 def binary_xloss(logits, labels, ignore=None):
     """
     Binary Cross entropy loss
@@ -155,7 +153,7 @@ def binary_xloss(logits, labels, ignore=None):
       ignore: void class id
     """
     logits, labels = flatten_binary_scores(logits, labels, ignore)
-    loss = StableBCELoss()(logits, Variable(labels.float()))
+    loss = StableBCELoss(logits, torch.tensor(labels.float()).requires_grad_())
     return loss
 
 
@@ -203,11 +201,11 @@ def lovasz_softmax_flat(probas, labels, classes='present'):
             class_pred = probas[:, 0]
         else:
             class_pred = probas[:, c]
-        errors = (Variable(fg) - class_pred).abs()
+        errors = ((fg).requires_grad(True) - class_pred).abs()
         errors_sorted, perm = torch.sort(errors, 0, descending=True)
         perm = perm.data
         fg_sorted = fg[perm]
-        losses.append(torch.dot(errors_sorted, Variable(lovasz_grad(fg_sorted))))
+        losses.append(torch.dot(errors_sorted, torch.tensor(lovasz_grad(fg_sorted)).requires_grad_()))
     return mean(losses)
 
 
@@ -233,7 +231,7 @@ def xloss(logits, labels, ignore=None):
     """
     Cross entropy loss
     """
-    return F.cross_entropy(logits, Variable(labels), ignore_index=255)
+    return F.cross_entropy(logits, torch.tensor(labels).requires_grad_(), ignore_index=255)
 
 
 # --------------------------- HELPER FUNCTIONS ---------------------------

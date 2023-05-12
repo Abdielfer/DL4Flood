@@ -83,7 +83,7 @@ class models_trainer(object):
             return None
         for x_batch, y_batch in data_loader:
             x_batch = x_batch.to(self.device)
-            y_batch = y_batch.to(self.device).float()   ## Add .float() to avoid type conflict
+            y_batch = y_batch.to(self.device) #.float()   ## Add .float() to avoid type conflict
             mini_batch_loss = step_fn(x_batch, y_batch)
             mini_batch_losses.append(mini_batch_loss)
         loss = np.mean(mini_batch_losses)
@@ -147,7 +147,7 @@ class models_trainer(object):
 
     def train(self, n_epochs, seed=42):
         self.set_seed(seed)
-        
+
         for epoch in range(n_epochs):
             print(f"Epoch {epoch} ........ ->")
             self.total_epochs += 1
@@ -235,6 +235,7 @@ class models_trainer(object):
         plt.ylabel('Loss')
         plt.legend()
         plt.tight_layout()
+        fig.show()
         return fig
    
     def set_seed(self, seed=42):
