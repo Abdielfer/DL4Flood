@@ -4,13 +4,14 @@ from model_set.models import UNetFlood
 from scr import util as U
 from scr import dataLoader as D
 from scr import models_trainer as MT
-from scr import util as U
 from scr import losses as L
 from scr.losses import iou_binary,binaryAccuracy, lovasz_hinge 
 from omegaconf import DictConfig, OmegaConf
 from torch.optim import Adam, SGD
 import torch
 from torch.nn import MSELoss
+from torch.nn.init import kaiming_normal_, kaiming_uniform_
+import logging
 
 class computeStandardizers():
     def __init__(self, cfg:DictConfig) -> None:
@@ -38,7 +39,6 @@ class applyPermanentTransformation():
     def transform(self):
         D.offlineTransformation(self.dataSourcePath,self.transitFolder)
 
-
 class excecuteTrainingVelum():
     def __init__(self, cfg:DictConfig) -> None:
         trainSetList = cfg['trainingDataList']
@@ -48,21 +48,23 @@ class excecuteTrainingVelum():
         args = {'batch_size': 1, 'num_workers': 4,'drop_last': True}
         self.trainDataSet = D.customDataSet(trainSetList)
         self.train_DLoader = D.customDataloader(self.trainDataSet,args)   
-        self.valDataSet = D.customDataSet(valSetList)
+        self.valDataSet = D.customDataSet(valSetList, validationMode = True)
         self.val_DLoader = D.customDataloader(self.valDataSet,args)
-        self.testDataSet = D.customDataSet(testSetList)
-        self.test_DLoader = D.customDataloader(self.testDataSet,args)
-        
+        self.testDataSet = D.customDataSet(testSetList, validationMode = True)
+        self.test_DLoader = D.customDataloader(self.testDataSet,args)  
         self.model = UNetFlood(1,1)
         self.loss_fn = lovasz_hinge   #  MSELoss()
-        self.optimizer = Adam(self.model.parameters(), lr = 0.0005)#SGD(self.model.parameters(), lr=0.0000001, momentum=0.9)   ####  
-       
+        self.optimizer = Adam(self.model.parameters(), lr = 0.0001, weight_decay=0.01)#SGD(self.model.parameters(), lr=0.0000001, momentum=0.9)  
+        
     def excecute(self,epochs):
-        trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, iou_binary)
+        trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, iou_binary, init_func=kaiming_normal_ , mode='fan_in', nonlinearity='relu')
         trainer.set_loaders(self.train_DLoader,self.val_DLoader,self.test_DLoader)
         trainLosses, valLosses, testLosses = trainer.train(epochs)
         return self.model, [trainLosses, valLosses, testLosses]
 
+    def log(self):
+        trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, iou_binary, init_func=kaiming_normal_ , mode='fan_in', nonlinearity='relu')
+        trainer._testLogs_()
 
 class excecuteTraining():
     def __init__(self, cfg:DictConfig) -> None:
@@ -87,7 +89,8 @@ class excecuteTraining():
     
 @hydra.main(version_base=None, config_path=f"config", config_name="configMac.yaml")
 def main(cfg: DictConfig):
-
+    nameByTime = U.makeNameByTime()
+    print(f"nameByTime >>> {nameByTime}")
     # ## Spliting Trn-Val
     # trnList, valList = U.splitPerRegion(cfg['rawDataList'])
     # U.createCSVFromList(cfg['trainingDataList'], trnList)
@@ -102,12 +105,13 @@ def main(cfg: DictConfig):
     # print(MinMaxMeanSTD)
     
     ## Training cycle
+    logging.info(f"Name by Time {nameByTime}")
+    logging.info(cfg.parameters.model)
     trainer = excecuteTrainingVelum(cfg)
-    model, losses = trainer.excecute(20)
-    print(losses)
-    # # model, metric, losses = excecuteTraining(cfg)
-    # name = model.name
-    # U.saveModel(model, name)
+    model,losses = trainer.excecute(2)
+    # print(losses)
+    name = model.name
+    U.saveModel(model, name)
 
 
 if __name__ == "__main__":

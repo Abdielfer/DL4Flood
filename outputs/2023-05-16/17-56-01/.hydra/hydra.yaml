@@ -118,7 +118,7 @@ hydra:
     override_dirname: ''
     id: ???
     num: ???
-    config_name: configPC.yaml
+    config_name: configMac.yaml
     env_set: {}
     env_copy: []
     config:
@@ -140,7 +140,7 @@ hydra:
     - path: ''
       schema: structured
       provider: schema
-    output_dir: C:\Users\abfernan\CrossCanFloodMapping\DL4Flood\outputs\2023-05-10\13-27-30
+    output_dir: C:\Users\abfernan\CrossCanFloodMapping\DL4Flood\outputs\2023-05-16\17-56-01
     choices:
       parameters: configTraining
       hydra/env: default

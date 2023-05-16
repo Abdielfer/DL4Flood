@@ -210,15 +210,8 @@ class EncodingBlockFlood(nn.Module):
 
         self.EncodingBlock = nn.Sequential(*layers)
 
-    def fnToApply(nodel):
-            
-        pass
-
+    
     def forward(self, input_data, fn=None):
-        if fn is not None:
-            self.EncodingBlock.apply(fn)   
-            output = self.EncodingBlock(input_data)
-            return output
         output = self.EncodingBlock(input_data)
         return output
 

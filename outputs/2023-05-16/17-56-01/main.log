@@ -1,0 +1,2 @@
+[2023-05-16 17:56:01,207][root][INFO] - Name by Time 2305161756
+[2023-05-16 17:56:01,207][root][INFO] - {'_target_': 'models.unet.UNetFlood', 'dropout': True, 'prob': True}

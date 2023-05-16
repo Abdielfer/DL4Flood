@@ -15,10 +15,12 @@ import random
 class customDataSet(Dataset):
     def __init__(self, 
                 fullList:os.path,
-                inLineTransformation : bool = True):
+                inLineTransformation : bool = True,
+                validationMode:bool = False):
         super(Dataset, self).__init__()
         self.inLineTransformation = inLineTransformation
         self.img_list, self.mask_list = createImageMaskList(fullList)
+        self.validationMode = validationMode
 
     def __len__(self):
         return len(self.img_list)
@@ -28,20 +30,21 @@ class customDataSet(Dataset):
         mask_path = self.mask_list[index]
         with rio.open(img_path, 'r') as image:
             img = image.read()
-            # print('img shape at read time', img.shape)
         with rio.open(mask_path, 'r') as label:
             mask = label.read()
-            # print('mask shape at read time', mask.shape) 
-        
+                
         img, mask = self.__Standardization__(img,mask, mean=155, std= 194.2)
 
+        if self.validationMode:
+            img = U.imageToTensor(img)
+            mask = U.imageToTensor(mask) 
+            return img, mask
+        
         if self.inLineTransformation:
             img, mask = self.__inlineTranformation__(img,mask)
         
         img = U.imageToTensor(img)
-        # print('img shape at dataLoader delivery time', img.shape)
-        mask = U.imageToTensor(mask) # torch.tensor(mask, dtype=torch.int16)
-        # print('mask shape at dataLoader delivery time', mask.shape)
+        mask = U.imageToTensor(mask)
         return img, mask
 
     def _VerifyListsContent(sefl):  ## TODO 

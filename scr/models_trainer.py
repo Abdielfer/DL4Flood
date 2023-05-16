@@ -11,12 +11,17 @@ import matplotlib.pyplot as plt
 from scr import dataLoader as DL
 from torch.utils.tensorboard import SummaryWriter
 from scr import losses
+from scr import util as U
+import logging
+trainLogger = logging.getLogger(__name__)
 
 plt.style.use('fivethirtyeight')
 
 class models_trainer(object):
-    def __init__(self, model, loss_fn, optimizer, metric):
+    def __init__(self, model, loss_fn, optimizer, metric, init_func = None, *params, **kwargs):
         self.model = model
+        if init_func is not None:
+            self.init_all(self.model, init_func, *params, **kwargs) 
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.metric_fn = metric
@@ -32,6 +37,7 @@ class models_trainer(object):
         self.test_metric = [] 
         self.total_epochs = 0
         
+
     def set_loaders(self, 
                     train_loader: DL.customDataloader, 
                     val_loader:DL.customDataloader = None,
@@ -46,11 +52,11 @@ class models_trainer(object):
     def _make_train_step_fn(self):
         def perform_train_step_fn(x, y):
             self.model.train()
-            self.optimizer.zero_grad()
             yhat = self.model(x)
             loss = self.loss_fn(yhat, y)
             loss.backward()
             self.optimizer.step()
+            self.optimizer.zero_grad()
             item  = loss.item()
            # print(f"Training loss {item}")
             return item
@@ -152,24 +158,26 @@ class models_trainer(object):
             print(f"Epoch {epoch} ........ ->")
             self.total_epochs += 1
             loss = self._computeLossMeanPerMiniBatch(validation=False)
-            print(f"train Loss = {loss}")
+            # print(f"train Loss = {loss}")
             self.train_losses.append(loss)
             with torch.no_grad():
                 # Performs evaluation using mini-batches
                 val_loss = self._computeLossMeanPerMiniBatch(validation=True)
-                print(f"val Loss = {val_loss}")
+                # print(f"val Loss = {val_loss}")
                 self.val_losses.append(val_loss)
                 metric = self._computeMetricMiniBatch(self.val_loader)
                 self.val_metrics.append(metric)
-                print(f"Val Metric(s) per minibatch = {metric}")
+                # print(f"Val Metric(s) per minibatch = {metric}")
                 if self.test_loader is not None:
                     test_loss = self._computeLossMeanTestSet()
-                    print(f"Test Loss = {test_loss}")
+                    # print(f"Test Loss = {test_loss}")
                     self.test_losses.append(test_loss)
                     testMetric = self._computeMetricMiniBatch(self.test_loader)
                     self.test_metric.append(testMetric)
-                    print(f"Test Metric(s) per minibatch = {testMetric}")
-                
+                    # print(f"Test Metric(s) per minibatch = {testMetric}")
+
+            trainLogger.info(f"Epoch_{epoch}: trainLoss = {loss}: valLoss = {val_loss}: valMetric = {metric}; test_loss = {test_loss}; testMetric = {testMetric}")
+        
             # If a SummaryWriter has been set...
             if self.writer:
                 scalars = {'training': loss}
@@ -183,15 +191,17 @@ class models_trainer(object):
                 self.writer.add_scalars(main_tag='metric',
                                         # tag_scalar_dict=metricSaclar,
                                         global_step=epoch)  
+        trainLogger.info(f"Train losses after {epoch} epochs : {self.train_losses}")
+        trainLogger.info(f"Validation losses after {epoch} epochs : {self.val_losses}")
+        trainLogger.info(f"Test losses after {epoch} epochs : {self.test_losses}")
+        self.plot_losses()
+        
         
         if self.writer:
             # Closes the writer
             self.writer.close()
   
-        self.plot_losses()
-        
         return self.train_losses, self.val_losses, self.test_losses 
-
 
     def save_checkpoint(self, filename):
         # Builds dictionary with all elements for resuming training
@@ -226,6 +236,7 @@ class models_trainer(object):
         return mask.detach().cpu().numpy()
 
     def plot_losses(self):
+        print("I'm into plot Losess function")
         fig = plt.figure(figsize=(10, 4))
         plt.plot(self.train_losses, label='Training Loss', c='b')
         plt.plot(self.val_losses, label='Validation Loss', c='r')
@@ -263,3 +274,14 @@ class models_trainer(object):
         suffix = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
         self.writer = SummaryWriter(f'{folder}/{name}_{suffix}')
 
+    def init_all(self, model, init_func, *params, **kwargs):
+        for p in model.parameters():
+            if type(p) == torch.nn.Conv2d:
+                init_func(p, *params, **kwargs)
+
+    def _testLogs_(self)->None:
+        trainLogger.info(f"Test comming from model_trainer")
+    
+         
+
+    
