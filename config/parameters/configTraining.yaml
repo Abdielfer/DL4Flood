@@ -25,5 +25,5 @@ metric_fn :
 optimizer:
   _target_: torch.optim.Adam
   maximize : True
-  lr: 0.01
-  weight_decay : 0.01
+  lr: 0.1
+  weight_decay : 0.1

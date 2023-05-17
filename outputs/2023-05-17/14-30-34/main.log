@@ -1,0 +1,7 @@
+[2023-05-17 14:30:34,300][root][INFO] - Model saved as :2305171430
+[2023-05-17 14:30:34,301][root][INFO] - {'_target_': 'model_set.models.UNetFlood', 'classes': 1, 'in_channels': 1, 'dropout': True, 'prob': True}
+[2023-05-17 14:30:34,301][root][INFO] - {'_target_': 'torch.optim.Adam', 'maximize': True, 'lr': 0.001, 'weight_decay': 0.1}
+[2023-05-17 14:35:48,008][scr.models_trainer][INFO] - Epoch_0: trainLoss = 7.124988163906554e+25: valLoss = 1.2284963666540172e+26: valMetric = 18.389435922014584; test_loss = 1.3070933021658462e+26; testMetric = 13.168141719403376
+[2023-05-17 14:40:38,306][scr.models_trainer][INFO] - Epoch_1: trainLoss = 1.7059060556210134e+26: valLoss = 1.8285971621733238e+26: valMetric = 18.389435922014584; test_loss = 1.9455874537220815e+26; testMetric = 13.168141719403376
+[2023-05-17 14:45:33,399][scr.models_trainer][INFO] - Epoch_2: trainLoss = 2.3133344279393018e+26: valLoss = 2.3581371231701545e+26: valMetric = 18.389435922014584; test_loss = 2.509006377800601e+26; testMetric = 13.168141719403376
+[2023-05-17 14:50:33,475][scr.models_trainer][INFO] - Epoch_3: trainLoss = 2.9030957351735474e+26: valLoss = 2.8888061402543824e+26: valMetric = 18.389435922014584; test_loss = 3.073626635177556e+26; testMetric = 13.168141719403376
