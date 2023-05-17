@@ -1,5 +1,4 @@
-import hydra
-import hydra._internal.instantiate._instantiate2 as instantiate
+import hydra 
 from model_set.models import UNetFlood
 from scr import util as U
 from scr import dataLoader as D
@@ -54,7 +53,7 @@ class excecuteTrainingVelum():
         self.test_DLoader = D.customDataloader(self.testDataSet,args)  
         self.model = UNetFlood(1,1)
         self.loss_fn = lovasz_hinge   #  MSELoss()
-        self.optimizer = Adam(self.model.parameters(), lr = 0.01, weight_decay=0.01)
+        self.optimizer = Adam(self.model.parameters(), lr = 0.01, weight_decay=0.01, maximize=True)
     def excecute(self,epochs):
         trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, iou_binary, init_func=kaiming_normal_ , mode='fan_in', nonlinearity='relu')
         trainer.set_loaders(self.train_DLoader,self.val_DLoader,self.test_DLoader)
@@ -87,7 +86,7 @@ class excecuteTraining():
     # def excecute(self,epochs):
         
 
-@hydra.main(version_base=None, config_path=f"config", config_name="configMac.yaml")
+@hydra.main(version_base=None, config_path=f"config", config_name="configVelum.yaml")
 def main(cfg: DictConfig):
     # ## Spliting Trn-Val
     # trnList, valList = U.splitPerRegion(cfg['rawDataList'])
@@ -107,7 +106,8 @@ def main(cfg: DictConfig):
     logging.info(f"Model saved as :{nameByTime}")
     logging.info(cfg.parameters.model)
     logging.info(cfg.parameters.optimizer)
-    model,losses = excecuteTraining(cfg)
+    trainer = excecuteTrainingVelum(cfg)
+    model,losses = trainer.excecute(10)
     # saveModelPath = U.makePath(cfg['saveModelsPath'],nameByTime)
     U.saveModel(model, nameByTime)
 
