@@ -1,0 +1,39 @@
+parameters:
+  targetColName: percentage
+  epochs: 10
+  dataLoaderArgs:
+    batch_size: 1
+    num_workers: 4
+    drop_last: true
+  scheduler: plateau
+  makeTest: true
+  hydra: default
+  override hydra/hydra_logging: colorlog
+  override hydra/job_logging: colorlog
+  modelMode: train
+  model:
+    _target_: model_set.models.UNetFlood
+    dropout: true
+    prob: true
+  loss_fn:
+    _target_: scr.losses.lovasz_hinge
+  metric_fn:
+    _target_: scr.losses.lovasz_hinge
+  optimizer:
+    _target_: torch.optim.ADAM
+    params: self.model.parameter()
+    lr: 0.01
+    weight_decay: 0.01
+work_dir: ${hydra:runtime.cwd}
+config_name: ${hydra:job.config_name}
+config_override_dirname: ${hydra:job.override_dirname}
+config_path: ${hydra:runtime.config_sources}
+projectRoot: C:\Users\abfernan\CrossCanFloodMapping\DL4Flood
+saveModelsPath: ${projectRoot}\savedModels
+dataRoot: C:\Users\abfernan\CrossCanFloodMapping\DatasetCNNFlood\C1Dataset\Percentage_1
+rawDataList: C:\Users\abfernan\CrossCanFloodMapping\DatasetCNNFlood\C1Dataset\Percentage_1\TrainingDataSource_Percentage_1_feat1_min-annot1_trn.csv
+trainingDataList: ${dataRoot}\SplitedTrainingSetPlusRotated.csv
+validationDataList: ${dataRoot}\SplitedValSet.csv
+testingDataList: ${dataRoot}\Percentage_1_testSet\Percentage_1_testSet_feat1_min-annot1_trn.csv
+permanentTransformetionSavePath: ${dataRoot}\trn
+standardizerSavePath: ${dataRoot}\standardizers.csv

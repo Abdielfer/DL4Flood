@@ -1,10 +1,11 @@
 import hydra 
+from hydra.utils import instantiate
 from model_set.models import UNetFlood
 from scr import util as U
 from scr import dataLoader as D
 from scr import models_trainer as MT
 from scr import losses as L
-from scr.losses import iou_binary,binaryAccuracy, lovasz_hinge 
+from scr.losses import iou_binary,lovasz_hinge 
 from omegaconf import DictConfig, OmegaConf
 from torch.optim import Adam, SGD
 import torch
@@ -61,7 +62,7 @@ class excecuteTrainingVelum():
         return self.model, [trainLosses, valLosses, testLosses]
 
 class excecuteTraining():
-    def __init__(self, cfg:DictConfig) -> dict:
+    def __init__(self, cfg:DictConfig):
         args = cfg.parameters['dataLoaderArgs']
         self.trainDataSet = D.customDataSet(cfg['trainingDataList'])
         self.train_DLoader = D.customDataloader(self.trainDataSet,args)   
@@ -69,16 +70,15 @@ class excecuteTraining():
         self.val_DLoader = D.customDataloader(self.valDataSet,args)
         self.testDataSet = D.customDataSet(cfg['testingDataList'], validationMode = True)
         self.test_DLoader = D.customDataloader(self.testDataSet,args)  
-        
-        model = OmegaConf.create(cfg.parameters.model)
+        model = OmegaConf.create(cfg.parameters['model'])
         self.model = instantiate(model)
-        loss = OmegaConf.create(cfg.parameters.loss_fn)
-        self.loss_fn = instantiate(loss)
-        criterion = OmegaConf.create(cfg.parameters.optimizer)
-        self.optimizer = instantiate(criterion)
-        metric = OmegaConf.create(cfg.parameters.metric_fn)
-        self.metric_fn = instantiate(metric)
-        self.trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, self.metric_fn,init_func=kaiming_normal_ , mode='fan_in', nonlinearity='relu')
+        loss = cfg.parameters['loss_fn']
+        loss_fn = instantiate(loss)
+        criterion = OmegaConf.create(cfg.parameters['optimizer'])
+        self.optimizer = instantiate(criterion, params=self.model.parameters())
+        metric = cfg.parameters['metric_fn']
+        metric_fn = instantiate(metric)
+        self.trainer = MT.models_trainer(self.model,loss_fn,self.optimizer, metric_fn,init_func=kaiming_normal_ , mode='fan_in', nonlinearity='relu')
         self.trainer.set_loaders(self.train_DLoader,self.val_DLoader,self.test_DLoader)
         trainLosses, valLosses, testLosses = self.trainer.train(cfg.parameters['epochs'])
         return self.model, [trainLosses, valLosses, testLosses]
@@ -86,7 +86,7 @@ class excecuteTraining():
     # def excecute(self,epochs):
         
 
-@hydra.main(version_base=None, config_path=f"config", config_name="configVelum.yaml")
+@hydra.main(version_base=None, config_path=f"config", config_name="configPC.yaml")
 def main(cfg: DictConfig):
     # ## Spliting Trn-Val
     # trnList, valList = U.splitPerRegion(cfg['rawDataList'])
@@ -106,9 +106,9 @@ def main(cfg: DictConfig):
     logging.info(f"Model saved as :{nameByTime}")
     logging.info(cfg.parameters.model)
     logging.info(cfg.parameters.optimizer)
-    trainer = excecuteTrainingVelum(cfg)
-    model,losses = trainer.excecute(10)
-    # saveModelPath = U.makePath(cfg['saveModelsPath'],nameByTime)
+   
+    model,_ = excecuteTraining(cfg)
+     # saveModelPath = U.makePath(cfg['saveModelsPath'],nameByTime)
     U.saveModel(model, nameByTime)
 
 

@@ -1,0 +1,3 @@
+[2023-05-17 12:26:11,841][root][INFO] - Model saved as :2305171226
+[2023-05-17 12:26:11,842][root][INFO] - {'_target_': 'model_set.models.UNetFlood()', 'dropout': True, 'prob': True}
+[2023-05-17 12:26:11,842][root][INFO] - {'_target_': 'torch.optim.ADAM', 'params': 'self.model.parameters', 'lr': 0.01, 'weight_decay': 0.01}
