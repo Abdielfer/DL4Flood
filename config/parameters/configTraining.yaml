@@ -1,10 +1,8 @@
 
 ### ~\config\parameters\configTraining.yaml
 targetColName: percentage
-epochs : 1 
+epochs : 10 
 dataLoaderArgs :  {'batch_size': 1, 'num_workers': 4,'drop_last': True}
-optimizer: Adam
-optimizerParams : {'lr': 0.001}
 scheduler: plateau
 makeTest: True
 hydra: default
@@ -13,10 +11,15 @@ override hydra/job_logging: colorlog # enable color logging to make it pretty
 modelMode: train
 # @package _global_
 model:
-  _target_: models.unet.UNetFlood
+  _target_: model_set.models.UNetFlood()
   dropout: True    # (bool) Use dropout or not
   prob: True
 loss_fn: 
   _target_: scr.losses.lovasz_hinge
 metric_fn :
   _target_: scr.losses.lovasz_hinge 
+optimizer:
+  _target_: torch.optim.ADAM
+  params : self.model.parameters()
+  lr: 0.01
+  weight_decay : 0.01

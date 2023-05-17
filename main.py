@@ -54,43 +54,41 @@ class excecuteTrainingVelum():
         self.test_DLoader = D.customDataloader(self.testDataSet,args)  
         self.model = UNetFlood(1,1)
         self.loss_fn = lovasz_hinge   #  MSELoss()
-        self.optimizer = Adam(self.model.parameters(), lr = 0.0001, weight_decay=0.01)#SGD(self.model.parameters(), lr=0.0000001, momentum=0.9)  
-        
+        self.optimizer = Adam(self.model.parameters(), lr = 0.01, weight_decay=0.01)
     def excecute(self,epochs):
         trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, iou_binary, init_func=kaiming_normal_ , mode='fan_in', nonlinearity='relu')
         trainer.set_loaders(self.train_DLoader,self.val_DLoader,self.test_DLoader)
         trainLosses, valLosses, testLosses = trainer.train(epochs)
         return self.model, [trainLosses, valLosses, testLosses]
 
-    def log(self):
-        trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, iou_binary, init_func=kaiming_normal_ , mode='fan_in', nonlinearity='relu')
-        trainer._testLogs_()
-
 class excecuteTraining():
-    def __init__(self, cfg:DictConfig) -> None:
+    def __init__(self, cfg:DictConfig) -> dict:
+        args = cfg.parameters['dataLoaderArgs']
+        self.trainDataSet = D.customDataSet(cfg['trainingDataList'])
+        self.train_DLoader = D.customDataloader(self.trainDataSet,args)   
+        self.valDataSet = D.customDataSet(cfg['validationDataList'], validationMode = True)
+        self.val_DLoader = D.customDataloader(self.valDataSet,args)
+        self.testDataSet = D.customDataSet(cfg['testingDataList'], validationMode = True)
+        self.test_DLoader = D.customDataloader(self.testDataSet,args)  
+        
         model = OmegaConf.create(cfg.parameters.model)
-        # print(args)
-        # trainDataSet = D.customDataSet(cfg['trainingDataList'])
-        # train_DLoader = D.customDataloader(trainDataSet,args['dataLoaderArgs'])   
-        # valDataSet = D.customDataSet(cfg['validationDataList'])
-        # val_DLoader = D.customDataloader(valDataSet,args['dataLoaderArgs'])
-        # testDataSet = D.customDataSet(cfg['testingDataList'])
-        # test_DLoader = D.createTransformation(testDataSet,args['dataLoaderArgs'])
-        model = instantiate(model)
-        # loss_fn = instantiate(cfg.model)
-        # optimizer = args['optimizer']
-        # optimizer = optimizer(model.parameters(),args['optimizerParams'])
-        # metric = instantiate(cfg.metric_fn)
-        # trainer = MT.models_trainer(model,loss_fn,optimizer, metric)
-        # trainer.set_loaders(train_DLoader,val_DLoader,test_DLoader)
-        # trainLosses, valLosses, testLosses = trainer.train(args['epochs'])
-        # return model, metric, [trainLosses, valLosses, testLosses]
-        print("model >>","\n", model )
+        self.model = instantiate(model)
+        loss = OmegaConf.create(cfg.parameters.loss_fn)
+        self.loss_fn = instantiate(loss)
+        criterion = OmegaConf.create(cfg.parameters.optimizer)
+        self.optimizer = instantiate(criterion)
+        metric = OmegaConf.create(cfg.parameters.metric_fn)
+        self.metric_fn = instantiate(metric)
+        self.trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, self.metric_fn,init_func=kaiming_normal_ , mode='fan_in', nonlinearity='relu')
+        self.trainer.set_loaders(self.train_DLoader,self.val_DLoader,self.test_DLoader)
+        trainLosses, valLosses, testLosses = self.trainer.train(cfg.parameters['epochs'])
+        return self.model, [trainLosses, valLosses, testLosses]
     
+    # def excecute(self,epochs):
+        
+
 @hydra.main(version_base=None, config_path=f"config", config_name="configMac.yaml")
 def main(cfg: DictConfig):
-    nameByTime = U.makeNameByTime()
-    print(f"nameByTime >>> {nameByTime}")
     # ## Spliting Trn-Val
     # trnList, valList = U.splitPerRegion(cfg['rawDataList'])
     # U.createCSVFromList(cfg['trainingDataList'], trnList)
@@ -105,13 +103,13 @@ def main(cfg: DictConfig):
     # print(MinMaxMeanSTD)
     
     ## Training cycle
-    logging.info(f"Name by Time {nameByTime}")
+    nameByTime = U.makeNameByTime()
+    logging.info(f"Model saved as :{nameByTime}")
     logging.info(cfg.parameters.model)
-    trainer = excecuteTrainingVelum(cfg)
-    model,losses = trainer.excecute(2)
-    # print(losses)
-    name = model.name
-    U.saveModel(model, name)
+    logging.info(cfg.parameters.optimizer)
+    model,losses = excecuteTraining(cfg)
+    # saveModelPath = U.makePath(cfg['saveModelsPath'],nameByTime)
+    U.saveModel(model, nameByTime)
 
 
 if __name__ == "__main__":

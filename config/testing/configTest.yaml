@@ -1,8 +1,0 @@
-defaults:
-  - model: gdl_unet
-  - modelMOde: eval
-  - loss: binary/softbce
-  - hydra: default
-  - override hydra/hydra_logging: colorlog # enable color logging to make it pretty
-  - override hydra/job_logging: colorlog # enable color logging to make it pretty
-  - _self_

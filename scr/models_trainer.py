@@ -14,7 +14,6 @@ from scr import losses
 from scr import util as U
 import logging
 trainLogger = logging.getLogger(__name__)
-
 plt.style.use('fivethirtyeight')
 
 class models_trainer(object):
@@ -26,8 +25,8 @@ class models_trainer(object):
         self.optimizer = optimizer
         self.metric_fn = metric
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        print(f"Is TorchCudaAvailabe?? >>> {torch.cuda.is_available()}-> Active device :  {self.device}")
-        print(f"Actual metric {self.metric_fn}")
+        print(f" Active device :  {self.device}")
+        print(f"Actual metric function {self.metric_fn}")
         self.model.to(self.device)
         self.writer = None
         self.train_losses = []
@@ -37,7 +36,6 @@ class models_trainer(object):
         self.test_metric = [] 
         self.total_epochs = 0
         
-
     def set_loaders(self, 
                     train_loader: DL.customDataloader, 
                     val_loader:DL.customDataloader = None,
@@ -153,54 +151,30 @@ class models_trainer(object):
 
     def train(self, n_epochs, seed=42):
         self.set_seed(seed)
-
         for epoch in range(n_epochs):
             print(f"Epoch {epoch} ........ ->")
             self.total_epochs += 1
             loss = self._computeLossMeanPerMiniBatch(validation=False)
-            # print(f"train Loss = {loss}")
             self.train_losses.append(loss)
             with torch.no_grad():
                 # Performs evaluation using mini-batches
                 val_loss = self._computeLossMeanPerMiniBatch(validation=True)
-                # print(f"val Loss = {val_loss}")
                 self.val_losses.append(val_loss)
                 metric = self._computeMetricMiniBatch(self.val_loader)
                 self.val_metrics.append(metric)
-                # print(f"Val Metric(s) per minibatch = {metric}")
                 if self.test_loader is not None:
                     test_loss = self._computeLossMeanTestSet()
-                    # print(f"Test Loss = {test_loss}")
                     self.test_losses.append(test_loss)
                     testMetric = self._computeMetricMiniBatch(self.test_loader)
                     self.test_metric.append(testMetric)
-                    # print(f"Test Metric(s) per minibatch = {testMetric}")
-
+                    
             trainLogger.info(f"Epoch_{epoch}: trainLoss = {loss}: valLoss = {val_loss}: valMetric = {metric}; test_loss = {test_loss}; testMetric = {testMetric}")
         
-            # If a SummaryWriter has been set...
-            if self.writer:
-                scalars = {'training': loss}
-                # metricSaclar = {'validation Metric': metric}
-                if val_loss is not None:
-                    scalars.update({'validation': val_loss})
-                # Records both losses for each epoch under the main tag "loss"
-                self.writer.add_scalars(main_tag='loss',
-                                        tag_scalar_dict=scalars,
-                                        global_step=epoch)
-                self.writer.add_scalars(main_tag='metric',
-                                        # tag_scalar_dict=metricSaclar,
-                                        global_step=epoch)  
-        trainLogger.info(f"Train losses after {epoch} epochs : {self.train_losses}")
-        trainLogger.info(f"Validation losses after {epoch} epochs : {self.val_losses}")
-        trainLogger.info(f"Test losses after {epoch} epochs : {self.test_losses}")
+        trainLogger.info(f"Train losses after {n_epochs} epochs : {self.train_losses}")
+        trainLogger.info(f"Validation losses after {n_epochs} epochs : {self.val_losses}")
+        trainLogger.info(f"Test losses after {n_epochs} epochs : {self.test_losses}")
         self.plot_losses()
         
-        
-        if self.writer:
-            # Closes the writer
-            self.writer.close()
-  
         return self.train_losses, self.val_losses, self.test_losses 
 
     def save_checkpoint(self, filename):

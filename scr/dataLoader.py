@@ -15,12 +15,14 @@ import random
 class customDataSet(Dataset):
     def __init__(self, 
                 fullList:os.path,
-                inLineTransformation : bool = True,
-                validationMode:bool = False):
+                inLineTransformation:bool = True,
+                validationMode:bool = False,
+                standardize:bool = False):
         super(Dataset, self).__init__()
         self.inLineTransformation = inLineTransformation
         self.img_list, self.mask_list = createImageMaskList(fullList)
         self.validationMode = validationMode
+        self.Standardization = standardize
 
     def __len__(self):
         return len(self.img_list)
@@ -32,8 +34,9 @@ class customDataSet(Dataset):
             img = image.read()
         with rio.open(mask_path, 'r') as label:
             mask = label.read()
-                
-        img, mask = self.__Standardization__(img,mask, mean=155, std= 194.2)
+
+        if self.Standardization:
+            img, mask = self.__Standardization__(img,mask, mean=155, std= 194.2)
 
         if self.validationMode:
             img = U.imageToTensor(img)
