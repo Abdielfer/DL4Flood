@@ -1,15 +1,15 @@
 import hydra 
 from hydra.utils import instantiate
-from model_set.models import UNetFlood
+#from model_set.models import UNetFlood
 from scr import util as U
 from scr import dataLoader as D
 from scr import models_trainer as MT
 from scr import losses as L
-from scr.losses import iou_binary,lovasz_hinge 
+#from scr.losses import iou_binary,lovasz_hinge 
 from omegaconf import DictConfig, OmegaConf
-from torch.optim import Adam, SGD
+#from torch.optim import Adam, SGD
 import torch
-from torch.nn import MSELoss
+#from torch.nn import MSELoss
 from torch.nn.init import kaiming_normal_, kaiming_uniform_
 import logging
 
@@ -73,18 +73,18 @@ class excecuteTraining():
         model = OmegaConf.create(cfg.parameters['model'])
         self.model = instantiate(model)
         loss = cfg.parameters['loss_fn']
-        loss_fn = instantiate(loss)
+        self.loss_fn = instantiate(loss)
         criterion = OmegaConf.create(cfg.parameters['optimizer'])
         self.optimizer = instantiate(criterion, params=self.model.parameters())
         metric = cfg.parameters['metric_fn']
-        metric_fn = instantiate(metric)
-        self.trainer = MT.models_trainer(self.model,loss_fn,self.optimizer, metric_fn,init_func=kaiming_normal_ , mode='fan_in', nonlinearity='relu')
-        self.trainer.set_loaders(self.train_DLoader,self.val_DLoader,self.test_DLoader)
-        trainLosses, valLosses, testLosses = self.trainer.train(cfg.parameters['epochs'])
-        return self.model, [trainLosses, valLosses, testLosses]
-    
-    # def excecute(self,epochs):
+        self.metric_fn = instantiate(metric)
         
+    
+    def excecute(self,epochs):
+        self.trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, self.metric_fn,init_func=kaiming_normal_ , mode='fan_out', nonlinearity='relu')
+        self.trainer.set_loaders(self.train_DLoader,self.val_DLoader,self.test_DLoader)
+        trainLosses, valLosses, testLosses = self.trainer.train(epochs)
+        return self.model, [trainLosses, valLosses, testLosses]
 
 @hydra.main(version_base=None, config_path=f"config", config_name="configPC.yaml")
 def main(cfg: DictConfig):
@@ -106,8 +106,8 @@ def main(cfg: DictConfig):
     logging.info(f"Model saved as :{nameByTime}")
     logging.info(cfg.parameters.model)
     logging.info(cfg.parameters.optimizer)
-   
-    model,_ = excecuteTraining(cfg)
+    trainer = excecuteTraining(cfg)
+    model,_ = trainer.excecute(cfg.parameters['epochs'])
      # saveModelPath = U.makePath(cfg['saveModelsPath'],nameByTime)
     U.saveModel(model, nameByTime)
 

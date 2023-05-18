@@ -16,7 +16,7 @@ parameters:
     classes: 1
     in_channels: 1
     dropout: true
-    prob: true
+    prob: 0.2
   loss_fn:
     _partial_: true
     _target_: scr.losses.lovasz_hinge
@@ -26,8 +26,8 @@ parameters:
   optimizer:
     _target_: torch.optim.Adam
     maximize: true
-    lr: 0.1
-    weight_decay: 0.1
+    lr: 1.0e-07
+    weight_decay: 0.9
 work_dir: ${hydra:runtime.cwd}
 config_name: ${hydra:job.config_name}
 config_override_dirname: ${hydra:job.override_dirname}

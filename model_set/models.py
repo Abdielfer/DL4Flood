@@ -225,7 +225,7 @@ class UNetFlood(nn.Module):
     @in_channels: Number of channels in the input image. 
     """
 
-    def __init__(self, classes, in_channels, dropout=False, prob:float = 0.5):
+    def __init__(self, classes, in_channels, dropout=True, prob:float = 0.5):
         super().__init__()
         self.classes = classes
         self.conv1 = EncodingBlockFlood(in_channels, 64, dropout=dropout, prob=prob)
