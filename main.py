@@ -109,7 +109,8 @@ def main(cfg: DictConfig):
     trainer = excecuteTraining(cfg)
     model,_ = trainer.excecute(cfg.parameters['epochs'])
      # saveModelPath = U.makePath(cfg['saveModelsPath'],nameByTime)
-    U.saveModel(model, nameByTime)
+    saveModelPath = U.makePath(cfg['work_dir'],nameByTime)
+    U.saveModel(model,saveModelPath)
 
 
 if __name__ == "__main__":
