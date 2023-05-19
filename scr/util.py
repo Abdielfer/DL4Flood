@@ -10,6 +10,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
+from torch.utils.data import Dataset, DataLoader,random_split
+
 import rasterio as rio
 from rasterio.plot import show_hist
 from datetime import datetime
@@ -61,7 +63,7 @@ def createWeightVector(y_vector, dominantValue:float, dominantValuePenalty:float
     weightVec = [dominantValuePenalty if y_ravel[j] == dominantValue else 1 for j in range(len(y_ravel))]
     return weightVec
 
-####  Sampling manipulation
+####  Sampling and Dataset manipulation
 def stratifiedSampling(dataSetName, targetColName):
     '''
     Performe a sampling that preserve classses proportions on both, train and test sets.
@@ -191,6 +193,28 @@ def makeBinary(dataset,targetColumn,classToKeep:int, replacerClassName:int):
     repalcer  = dataset[targetColumn].to_numpy()
     dataset[targetColumn] = [replacerClassName if repalcer[j] != classToKeep else repalcer[j] for j in range(len(repalcer))]  
     return dataset
+
+   
+def importDataSet(dataSetName, targetCol: str):
+    '''
+    @input: DataSetName => The dataset path. DataSet must be in *.csv format. 
+    @Output: Features(x) and tragets(y) 
+    ''' 
+    x  = pd.read_csv(dataSetName, index_col = None)
+    y = x[targetCol]
+    x.drop([targetCol], axis=1, inplace = True)
+    return x, y
+
+def splitDataset(dataset:Dataset, proportions = [.9,.1] ,seed:int = 42, )-> Dataset:
+    '''
+    ref: https://pytorch.org/docs/stable/data.html# 
+    '''
+    len = dataset.__len__()
+    lengths = [int(p *len) for p in proportions]
+    lengths[-1] = len - sum(lengths[:-1])
+    generator = torch.Generator().manual_seed(seed)
+    train_CustomDS, val_CustomDS = random_split(dataset,lengths,generator=generator)
+    return train_CustomDS, val_CustomDS
 
 ### Configurations And file management
 def importConfig():
@@ -465,17 +489,10 @@ def makeMatching_TifMask_List(scvPath,tifDir,delim:str =',',)->list:
        
     csvList = createCSVFromList(scvPath,matchingList, delim = delim)
     return matchingList
-    
-def importDataSet(dataSetName, targetCol: str):
-    '''
-    @input: DataSetName => The dataset path. DataSet must be in *.csv format. 
-    @Output: Features(x) and tragets(y) 
-    ''' 
-    x  = pd.read_csv(dataSetName, index_col = None)
-    y = x[targetCol]
-    x.drop([targetCol], axis=1, inplace = True)
-    return x, y
-
+   
+## Device
+def checkDevice():
+    return 'cuda' if torch.cuda.is_available() else 'cpu'
 
  ### Metrics ####  
 

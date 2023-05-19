@@ -1,9 +1,8 @@
 import os
 import csv
 import numpy as np
-import torch
+# import torch
 from torch.utils.data import Dataset, DataLoader,random_split
-from torchgeo.datasets import RasterDataset, unbind_samples, stack_samples
 import torchvision.transforms as transforms
 from skimage import transform
 from rasterio.plot import show
@@ -149,17 +148,6 @@ def customDataloader(dataset:customDataSet, args:dict) -> DataLoader:
     
     return customDL
 
-def splitDataset(dataset:customDataSet, proportions = [.9,.1] ,seed:int = 42, )-> customDataSet:
-    '''
-    ref: https://pytorch.org/docs/stable/data.html# 
-    '''
-    len = dataset.__len__()
-    lengths = [int(p *len) for p in proportions]
-    lengths[-1] = len - sum(lengths[:-1])
-    generator = torch.Generator().manual_seed(seed)
-    train_CustomDS, val_CustomDS = random_split(dataset,lengths,generator=generator)
-    return train_CustomDS, val_CustomDS
-  
 
 ## Helper functions 
 # "on Going code, not ready yet"

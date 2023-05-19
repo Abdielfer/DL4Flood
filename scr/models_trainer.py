@@ -24,7 +24,7 @@ class models_trainer(object):
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.metric_fn = metric
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = U.checkDevice()
         print(f" Active device :  {self.device}")
         print(f"Actual metric function {self.metric_fn}")
         self.model.to(self.device)
