@@ -153,7 +153,27 @@ def distrubutePathInTrnTst(allPath,trnPercent)->list:
         trn.append(allPath.pop(allPath.index(item)))
     tst = allPath
     return trn,tst
+  
+def importDataSet(dataSetName, targetCol: str):
+    '''
+    @input: DataSetName => The dataset path. DataSet must be in *.csv format. 
+    @Output: Features(x) and tragets(y) 
+    ''' 
+    x  = pd.read_csv(dataSetName, index_col = None)
+    y = x[targetCol]
+    x.drop([targetCol], axis=1, inplace = True)
+    return x, y
 
+def splitDataset(dataset:Dataset, proportions = [.9,.1] ,seed:int = 42, )-> Dataset:
+    '''
+    ref: https://pytorch.org/docs/stable/data.html# 
+    '''
+    len = dataset.__len__()
+    lengths = [int(p *len) for p in proportions]
+    lengths[-1] = len - sum(lengths[:-1])
+    generator = torch.Generator().manual_seed(seed)
+    train_CustomDS, val_CustomDS = random_split(dataset,lengths,generator=generator)
+    return train_CustomDS, val_CustomDS
 
 ### Modifying class domain
 def pseudoClassCreation(dataset, conditionVariable, threshold, pseudoClass, targetColumnName):
@@ -193,28 +213,6 @@ def makeBinary(dataset,targetColumn,classToKeep:int, replacerClassName:int):
     repalcer  = dataset[targetColumn].to_numpy()
     dataset[targetColumn] = [replacerClassName if repalcer[j] != classToKeep else repalcer[j] for j in range(len(repalcer))]  
     return dataset
-
-   
-def importDataSet(dataSetName, targetCol: str):
-    '''
-    @input: DataSetName => The dataset path. DataSet must be in *.csv format. 
-    @Output: Features(x) and tragets(y) 
-    ''' 
-    x  = pd.read_csv(dataSetName, index_col = None)
-    y = x[targetCol]
-    x.drop([targetCol], axis=1, inplace = True)
-    return x, y
-
-def splitDataset(dataset:Dataset, proportions = [.9,.1] ,seed:int = 42, )-> Dataset:
-    '''
-    ref: https://pytorch.org/docs/stable/data.html# 
-    '''
-    len = dataset.__len__()
-    lengths = [int(p *len) for p in proportions]
-    lengths[-1] = len - sum(lengths[:-1])
-    generator = torch.Generator().manual_seed(seed)
-    train_CustomDS, val_CustomDS = random_split(dataset,lengths,generator=generator)
-    return train_CustomDS, val_CustomDS
 
 ### Configurations And file management
 def importConfig():
