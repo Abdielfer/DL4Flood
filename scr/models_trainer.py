@@ -33,7 +33,7 @@ class models_trainer(object):
         self.val_losses = []
         self.val_metrics = [] 
         self.test_losses = []
-        self.test_metric = [] 
+        self.test_metrics = [] 
         self.total_epochs = 0
         
     def set_loaders(self, 
@@ -160,20 +160,22 @@ class models_trainer(object):
                 # Performs evaluation using mini-batches
                 val_loss = self._computeLossMeanPerMiniBatch(validation=True)
                 self.val_losses.append(val_loss)
-                metric = self._computeMetricMiniBatch(self.val_loader)
-                self.val_metrics.append(metric)
+                valMetric = self._computeMetricMiniBatch(self.val_loader)
+                self.val_metrics.append(valMetric)
                 if self.test_loader is not None:
                     test_loss = self._computeLossMeanTestSet()
                     self.test_losses.append(test_loss)
                     testMetric = self._computeMetricMiniBatch(self.test_loader)
-                    self.test_metric.append(testMetric)
+                    self.test_metrics.append(testMetric)
                     
-            trainLogger.info(f"Epoch_{epoch}: trainLoss = {loss}: valLoss = {val_loss}: valMetric = {metric}; test_loss = {test_loss}; testMetric = {testMetric}")
+            trainLogger.info(f"Epoch_{epoch}: trainLoss = {loss}: valLoss = {val_loss}: valMetric = {valMetric}; test_loss = {test_loss}; testMetric = {testMetric}")
+        
         
         trainLogger.info(f"Train losses after {n_epochs} epochs : {self.train_losses}")
         trainLogger.info(f"Validation losses after {n_epochs} epochs : {self.val_losses}")
+        trainLogger.info(f"Validation metrics in {n_epochs} epochs : {self.val_metrics}")
         trainLogger.info(f"Test losses after {n_epochs} epochs : {self.test_losses}")
-        self.plot_losses()
+        trainLogger.info(f"Test metrics in {n_epochs} epochs : {self.test_metrics}")
         
         return self.train_losses, self.val_losses, self.test_losses 
 

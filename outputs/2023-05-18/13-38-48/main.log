@@ -1,3 +1,0 @@
-[2023-05-18 13:38:48,355][root][INFO] - Model saved as :2305181338
-[2023-05-18 13:38:48,356][root][INFO] - {'_target_': 'model_set.models.UNetFlood', 'classes': 1, 'in_channels': 1, 'dropout': False, 'prob': 0.0}
-[2023-05-18 13:38:48,356][root][INFO] - {'_target_': 'torch.optim.Adam', 'maximize': True, 'lr': 5e-06, 'weight_decay': 0.9, 'fused': True}

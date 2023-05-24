@@ -193,7 +193,6 @@ def makeBinary(dataset,targetColumn,classToKeep:int, replacerClassName:int):
     repalcer  = dataset[targetColumn].to_numpy()
     dataset[targetColumn] = [replacerClassName if repalcer[j] != classToKeep else repalcer[j] for j in range(len(repalcer))]  
     return dataset
-
    
 def importDataSet(dataSetName, targetCol: str):
     '''

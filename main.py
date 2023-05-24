@@ -8,7 +8,7 @@ from scr import losses as L
 #from scr.losses import iou_binary,lovasz_hinge 
 from omegaconf import DictConfig, OmegaConf
 #from torch.optim import Adam, SGD
-import torch
+# import torch
 #from torch.nn import MSELoss
 from torch.nn.init import kaiming_normal_, kaiming_uniform_
 import logging
@@ -84,6 +84,7 @@ class excecuteTraining():
         self.trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, self.metric_fn,init_func=kaiming_normal_ , mode='fan_out', nonlinearity='relu')
         self.trainer.set_loaders(self.train_DLoader,self.val_DLoader,self.test_DLoader)
         trainLosses, valLosses, testLosses = self.trainer.train(epochs)
+        self.trainer.plot_losses()
         return self.model, [trainLosses, valLosses, testLosses]
 
 @hydra.main(version_base=None, config_path=f"config", config_name="configPC.yaml")
@@ -108,9 +109,7 @@ def main(cfg: DictConfig):
     logging.info(cfg.parameters.optimizer)
     trainer = excecuteTraining(cfg)
     model,_ = trainer.excecute(cfg.parameters['epochs'])
-     # saveModelPath = U.makePath(cfg['saveModelsPath'],nameByTime)
-    saveModelPath = U.makePath(cfg['work_dir'],nameByTime)
-    U.saveModel(model,saveModelPath)
+    U.saveModel(model,nameByTime)
 
 
 if __name__ == "__main__":
