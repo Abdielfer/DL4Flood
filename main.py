@@ -84,6 +84,7 @@ def main(cfg: DictConfig):
     nameByTime = U.makeNameByTime()
     logging.info(f"Model saved as :{nameByTime}")
     logging.info(cfg.parameters.model)
+    logging.info(cfg.parameters.loss_fn)
     logging.info(cfg.parameters.optimizer)
     trainer = excecuteTraining(cfg)
     model,_ = trainer.excecute(cfg.parameters['epochs'])
