@@ -2,3 +2,4 @@
 [2023-05-24 11:49:42,320][root][INFO] - {'_target_': 'model_set.models.UNetFlood', 'classes': 1, 'in_channels': 1, 'dropout': True, 'prob': 0.1}
 [2023-05-24 11:49:42,320][root][INFO] - {'_target_': 'torch.optim.Adam', 'maximize': False, 'lr': 0.0001, 'weight_decay': 0.9}
 [2023-05-24 11:54:37,759][scr.models_trainer][INFO] - Epoch_0: trainLoss = 0.5998695072958705: valLoss = 0.6102244632327976: valMetric = 0.0; test_loss = 0.5947117952890294; testMetric = 0.0
+[2023-05-24 11:59:26,312][scr.models_trainer][INFO] - Epoch_1: trainLoss = 0.5784472362505633: valLoss = 0.599928579138751: valMetric = 0.0; test_loss = 0.5821483378769249; testMetric = 0.0
