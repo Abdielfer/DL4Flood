@@ -39,28 +39,6 @@ class applyPermanentTransformation():
     def transform(self):
         D.offlineTransformation(self.dataSourcePath,self.transitFolder)
 
-class excecuteTrainingVelum():
-    def __init__(self, cfg:DictConfig) -> None:
-        trainSetList = cfg['trainingDataList']
-        valSetList = cfg['validationDataList']
-        testSetList = cfg['testingDataList']
-
-        args = {'batch_size': 1, 'num_workers': 4,'drop_last': True}
-        self.trainDataSet = D.customDataSet(trainSetList)
-        self.train_DLoader = D.customDataloader(self.trainDataSet,args)   
-        self.valDataSet = D.customDataSet(valSetList, validationMode = True)
-        self.val_DLoader = D.customDataloader(self.valDataSet,args)
-        self.testDataSet = D.customDataSet(testSetList, validationMode = True)
-        self.test_DLoader = D.customDataloader(self.testDataSet,args)  
-        self.model = UNetFlood(1,1)
-        self.loss_fn = lovasz_hinge   #  MSELoss()
-        self.optimizer = Adam(self.model.parameters(), lr = 0.01, weight_decay=0.01, maximize=True)
-    def excecute(self,epochs):
-        trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, iou_binary, init_func=kaiming_normal_ , mode='fan_in', nonlinearity='relu')
-        trainer.set_loaders(self.train_DLoader,self.val_DLoader,self.test_DLoader)
-        trainLosses, valLosses, testLosses = trainer.train(epochs)
-        return self.model, [trainLosses, valLosses, testLosses]
-
 class excecuteTraining():
     def __init__(self, cfg:DictConfig):
         args = cfg.parameters['dataLoaderArgs']
