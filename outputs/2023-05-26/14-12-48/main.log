@@ -32,3 +32,4 @@
 [2023-05-26 17:43:45,722][scr.models_trainer][INFO] - Epoch_27: trainLoss = 1.1371977603347546e+26: valLoss = 5.8414210007646956e+26: valMetric = 0.0; test_loss = 1.2716676420729893e+27; testMetric = 0.0
 [2023-05-26 17:51:42,516][scr.models_trainer][INFO] - Epoch_28: trainLoss = 1.1776810662271515e+26: valLoss = 5.564692346638058e+26: valMetric = 0.0; test_loss = 1.2702971606605374e+27; testMetric = 0.0
 [2023-05-26 17:59:48,687][scr.models_trainer][INFO] - Epoch_29: trainLoss = 1.2228021454512383e+26: valLoss = 1.3284093328516943e+27: valMetric = 0.0; test_loss = 2.0326756117277685e+27; testMetric = 0.0
+[2023-05-26 18:07:49,507][scr.models_trainer][INFO] - Epoch_30: trainLoss = 1.2558501051391138e+26: valLoss = 2.2629450664486227e+26: valMetric = 0.0; test_loss = 5.0795310523362454e+26; testMetric = 0.0
