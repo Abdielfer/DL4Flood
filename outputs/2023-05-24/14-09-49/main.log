@@ -1,0 +1,17 @@
+[2023-05-24 14:09:49,287][root][INFO] - Model saved as :2305241409
+[2023-05-24 14:09:49,287][root][INFO] - {'_target_': 'model_set.models.UNetFlood', 'classes': 1, 'in_channels': 1, 'dropout': True, 'prob': 0.1}
+[2023-05-24 14:09:49,288][root][INFO] - {'_partial_': True, '_target_': 'torch.nn.functional.binary_cross_entropy_with_logits'}
+[2023-05-24 14:09:49,288][root][INFO] - {'_target_': 'torch.optim.Adam', 'maximize': False, 'lr': 1e-06, 'weight_decay': 0.9}
+[2023-05-24 14:14:42,280][scr.models_trainer][INFO] - Epoch_0: trainLoss = 0.6357203687487536: valLoss = 0.6437224002189972: valMetric = 0.0017094693421833525; test_loss = 0.60764534082464; testMetric = 0.0
+[2023-05-24 14:20:21,939][scr.models_trainer][INFO] - Epoch_1: trainLoss = 0.6279512470370734: valLoss = 0.6635235746826359: valMetric = 12.68899577965284; test_loss = 0.6337382303130242; testMetric = 10.776165829329349
+[2023-05-24 14:26:47,047][scr.models_trainer][INFO] - Epoch_2: trainLoss = 0.6224935310806095: valLoss = 0.6503221898072928: valMetric = 0.04386799982474667; test_loss = 0.6245479878558907; testMetric = 0.0
+[2023-05-24 14:31:47,408][scr.models_trainer][INFO] - Epoch_3: trainLoss = 0.6163569378183723: valLoss = 0.6901766441799887: valMetric = 19.358011195269764; test_loss = 0.711691467672266; testMetric = 9.340277467074564
+[2023-05-24 14:36:34,882][scr.models_trainer][INFO] - Epoch_4: trainLoss = 0.613046820230639: valLoss = 0.6532999089539949: valMetric = 11.582205738431663; test_loss = 0.6305189209599649; testMetric = 22.585441374140807
+[2023-05-24 14:41:29,164][scr.models_trainer][INFO] - Epoch_5: trainLoss = 0.6079380762453798: valLoss = 0.6566064276512543: valMetric = 11.673874637619392; test_loss = 0.6347810491438834; testMetric = 17.215380146417274
+[2023-05-24 14:46:25,591][scr.models_trainer][INFO] - Epoch_6: trainLoss = 0.6033356885614212: valLoss = 0.6724062481118207: valMetric = 11.719121824777782; test_loss = 0.6982627386046995; testMetric = 9.575678258841158
+[2023-05-24 14:51:18,919][scr.models_trainer][INFO] - Epoch_7: trainLoss = 0.5997420417153149: valLoss = 0.7448203828578918: valMetric = 19.73431048383197; test_loss = 0.8694160705612551; testMetric = 9.340287278086306
+[2023-05-24 14:56:11,289][scr.models_trainer][INFO] - Epoch_8: trainLoss = 0.5945094699521537: valLoss = 0.7506962929239225: valMetric = 16.81297413736198; test_loss = 0.8765576821501537; testMetric = 9.34024569239098
+[2023-05-24 15:01:02,915][scr.models_trainer][INFO] - Epoch_9: trainLoss = 0.590190299513421: valLoss = 0.6647211944487825: valMetric = 10.673721059132008; test_loss = 0.661777096570179; testMetric = 9.792687396968146
+[2023-05-24 15:05:52,566][scr.models_trainer][INFO] - Epoch_10: trainLoss = 0.5898443526760337: valLoss = 0.8258105996790244: valMetric = 14.9481771448424; test_loss = 1.1079494831382588; testMetric = 9.349814722074811
+[2023-05-24 15:10:49,226][scr.models_trainer][INFO] - Epoch_11: trainLoss = 0.5858687799561499: valLoss = 0.7444094859400586: valMetric = 15.027633388700178; test_loss = 0.894029604170912; testMetric = 9.357446658085946
+[2023-05-24 15:15:41,533][scr.models_trainer][INFO] - Epoch_12: trainLoss = 0.5801739129129153: valLoss = 0.6461974945125268: valMetric = 0.0; test_loss = 0.630960036670008; testMetric = 0.0023806331123717127

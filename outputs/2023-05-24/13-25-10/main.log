@@ -1,0 +1,13 @@
+[2023-05-24 13:25:10,224][root][INFO] - Model saved as :2305241325
+[2023-05-24 13:25:10,225][root][INFO] - {'_target_': 'model_set.models.UNetFlood', 'classes': 1, 'in_channels': 1, 'dropout': True, 'prob': 0.1}
+[2023-05-24 13:25:10,225][root][INFO] - {'_partial_': True, '_target_': 'torch.nn.functional.binary_cross_entropy_with_logits'}
+[2023-05-24 13:25:10,225][root][INFO] - {'_target_': 'torch.optim.Adam', 'maximize': False, 'lr': 0.001, 'weight_decay': 0.9}
+[2023-05-24 13:30:03,495][scr.models_trainer][INFO] - Epoch_0: trainLoss = 0.5740179634428799: valLoss = 0.5918079485845327: valMetric = 0.0; test_loss = 0.5721636273527658; testMetric = 0.0
+[2023-05-24 13:34:55,988][scr.models_trainer][INFO] - Epoch_1: trainLoss = 0.571034783327421: valLoss = 0.5922246168007204: valMetric = 0.0; test_loss = 0.572677694982098; testMetric = 0.0
+[2023-05-24 13:39:51,143][scr.models_trainer][INFO] - Epoch_2: trainLoss = 0.5668636489654045: valLoss = 0.5941497446903631: valMetric = 0.0; test_loss = 0.5750503078583749; testMetric = 0.0
+[2023-05-24 13:44:41,927][scr.models_trainer][INFO] - Epoch_3: trainLoss = 0.5664900213083806: valLoss = 0.5924203923000163: valMetric = 0.0; test_loss = 0.5729191591662746; testMetric = 0.0
+[2023-05-24 13:49:29,928][scr.models_trainer][INFO] - Epoch_4: trainLoss = 0.5686512077400568: valLoss = 0.5917287376058761: valMetric = 0.0; test_loss = 0.5720658815035256; testMetric = 0.0
+[2023-05-24 13:54:21,562][scr.models_trainer][INFO] - Epoch_5: trainLoss = 0.568136709109719: valLoss = 0.5917317648628848: valMetric = 0.0; test_loss = 0.5720696301870448; testMetric = 0.0
+[2023-05-24 13:59:06,814][scr.models_trainer][INFO] - Epoch_6: trainLoss = 0.566678030962782: valLoss = 0.5913730527288351: valMetric = 0.0; test_loss = 0.5716268638128875; testMetric = 0.0
+[2023-05-24 14:03:53,156][scr.models_trainer][INFO] - Epoch_7: trainLoss = 0.5665631968478508: valLoss = 0.5903505170764636: valMetric = 0.0; test_loss = 0.5703639599584764; testMetric = 0.0
+[2023-05-24 14:08:35,251][scr.models_trainer][INFO] - Epoch_8: trainLoss = 0.565978333534483: valLoss = 0.5924993804351768: valMetric = 0.0; test_loss = 0.5730165723831423; testMetric = 0.0

@@ -3,3 +3,20 @@
 [2023-05-24 11:49:42,320][root][INFO] - {'_target_': 'torch.optim.Adam', 'maximize': False, 'lr': 0.0001, 'weight_decay': 0.9}
 [2023-05-24 11:54:37,759][scr.models_trainer][INFO] - Epoch_0: trainLoss = 0.5998695072958705: valLoss = 0.6102244632327976: valMetric = 0.0; test_loss = 0.5947117952890294; testMetric = 0.0
 [2023-05-24 11:59:26,312][scr.models_trainer][INFO] - Epoch_1: trainLoss = 0.5784472362505633: valLoss = 0.599928579138751: valMetric = 0.0; test_loss = 0.5821483378769249; testMetric = 0.0
+[2023-05-24 12:04:12,208][scr.models_trainer][INFO] - Epoch_2: trainLoss = 0.5684229584881263: valLoss = 0.5980871059187692: valMetric = 0.0; test_loss = 0.5798903056370315; testMetric = 0.0
+[2023-05-24 12:09:12,681][scr.models_trainer][INFO] - Epoch_3: trainLoss = 0.5674256231619301: valLoss = 0.5967543385735709: valMetric = 0.0; test_loss = 0.5782538460146996; testMetric = 0.0
+[2023-05-24 12:13:57,594][scr.models_trainer][INFO] - Epoch_4: trainLoss = 0.5685420028744279: valLoss = 0.5974056499088229: valMetric = 0.0; test_loss = 0.5790538166158943; testMetric = 0.0
+[2023-05-24 12:18:41,608][scr.models_trainer][INFO] - Epoch_5: trainLoss = 0.5686099635093216: valLoss = 0.5972330144901371: valMetric = 0.0; test_loss = 0.5788418246853736; testMetric = 0.0
+[2023-05-24 12:23:23,600][scr.models_trainer][INFO] - Epoch_6: trainLoss = 0.5670992332864195: valLoss = 0.5969234678014439: valMetric = 0.0; test_loss = 0.5784616124245429; testMetric = 0.0
+[2023-05-24 12:28:14,662][scr.models_trainer][INFO] - Epoch_7: trainLoss = 0.5671284926166562: valLoss = 0.5965399250912307: valMetric = 0.0; test_loss = 0.5779904127120972; testMetric = 0.0
+[2023-05-24 12:32:57,857][scr.models_trainer][INFO] - Epoch_8: trainLoss = 0.5662747197172314: valLoss = 0.5967518959812184: valMetric = 0.0; test_loss = 0.5782508465551561; testMetric = 0.0
+[2023-05-24 12:37:37,903][scr.models_trainer][INFO] - Epoch_9: trainLoss = 0.567235706511065: valLoss = 0.5967372209582497: valMetric = 0.0; test_loss = 0.5782328280069495; testMetric = 0.0
+[2023-05-24 12:42:26,033][scr.models_trainer][INFO] - Epoch_10: trainLoss = 0.5690005738766895: valLoss = 0.5975527427903372: valMetric = 0.0; test_loss = 0.5792343911304269; testMetric = 0.0
+[2023-05-24 12:47:06,930][scr.models_trainer][INFO] - Epoch_11: trainLoss = 0.5659678460752242: valLoss = 0.5964387250905061: valMetric = 0.0; test_loss = 0.5778660511457792; testMetric = 0.0
+[2023-05-24 12:51:45,076][scr.models_trainer][INFO] - Epoch_12: trainLoss = 0.5705245002686009: valLoss = 0.5975381860780955: valMetric = 0.0; test_loss = 0.579216520632467; testMetric = 0.0
+[2023-05-24 12:56:31,613][scr.models_trainer][INFO] - Epoch_13: trainLoss = 0.5662081685340915: valLoss = 0.5967784796527882: valMetric = 0.0; test_loss = 0.5782835272050673; testMetric = 0.0
+[2023-05-24 13:01:13,309][scr.models_trainer][INFO] - Epoch_14: trainLoss = 0.5642429861395538: valLoss = 0.5963504646890726: valMetric = 0.0; test_loss = 0.5777575662059169; testMetric = 0.0
+[2023-05-24 13:05:52,760][scr.models_trainer][INFO] - Epoch_15: trainLoss = 0.5643006081771287: valLoss = 0.5957889092627482: valMetric = 0.0; test_loss = 0.5770672771238512; testMetric = 0.0
+[2023-05-24 13:10:39,555][scr.models_trainer][INFO] - Epoch_16: trainLoss = 0.5666911327680422: valLoss = 0.5967435037071381: valMetric = 0.0; test_loss = 0.5782405375152506; testMetric = 0.0
+[2023-05-24 13:15:21,839][scr.models_trainer][INFO] - Epoch_17: trainLoss = 0.5657103625498987: valLoss = 0.5964807253986147: valMetric = 0.0; test_loss = 0.5779176565908617; testMetric = 0.0
+[2023-05-24 13:20:02,760][scr.models_trainer][INFO] - Epoch_18: trainLoss = 0.5673998843619883: valLoss = 0.5970751631200014: valMetric = 0.0; test_loss = 0.5786479570532358; testMetric = 0.0

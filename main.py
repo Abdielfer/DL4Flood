@@ -42,20 +42,18 @@ class applyPermanentTransformation():
 class excecuteTraining():
     def __init__(self, cfg:DictConfig):
         args = cfg.parameters['dataLoaderArgs']
-        self.trainDataSet = D.customDataSet(cfg['trainingDataList'])
+        self.trainDataSet = D.customDataSet(cfg['trainingDataList'], normalize= cfg.parameters['normalize'])
         self.train_DLoader = D.customDataloader(self.trainDataSet,args)   
-        self.valDataSet = D.customDataSet(cfg['validationDataList'], validationMode = True)
+        self.valDataSet = D.customDataSet(cfg['validationDataList'],normalize= cfg.parameters['normalize'], validationMode = True)
         self.val_DLoader = D.customDataloader(self.valDataSet,args)
-        self.testDataSet = D.customDataSet(cfg['testingDataList'], validationMode = True)
+        self.testDataSet = D.customDataSet(cfg['testingDataList'], normalize= cfg.parameters['normalize'], validationMode = True)
         self.test_DLoader = D.customDataloader(self.testDataSet,args)  
         model = OmegaConf.create(cfg.parameters['model'])
         self.model = instantiate(model)
-        loss = cfg.parameters['loss_fn']
-        self.loss_fn = instantiate(loss)
+        self.loss_fn = instantiate(cfg.parameters['loss_fn'])
         criterion = OmegaConf.create(cfg.parameters['optimizer'])
         self.optimizer = instantiate(criterion, params=self.model.parameters())
-        metric = cfg.parameters['metric_fn']
-        self.metric_fn = instantiate(metric)
+        self.metric_fn = instantiate(cfg.parameters['metric_fn'])
         
     
     def excecute(self,epochs):

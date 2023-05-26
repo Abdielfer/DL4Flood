@@ -178,8 +178,7 @@ class EncodingBlockFlood(nn.Module):
     2 pixel in H and W. 
     """
 
-    def __init__(self, in_size, out_size, kernel_size=3, padding=0, stride=1, dilation=1, batch_norm=True,
-                 dropout=False, prob=0.5):
+    def __init__(self, in_size, out_size, kernel_size=3, padding=0, stride=1, dilation=1, batch_norm=True, dropout=False, prob=0.5):
         super().__init__()
 
         if batch_norm:
