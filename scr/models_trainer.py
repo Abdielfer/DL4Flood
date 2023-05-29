@@ -152,21 +152,22 @@ class models_trainer(object):
     def train(self, n_epochs, seed=42):
         self.set_seed(seed)
         for epoch in range(n_epochs):
-            print(f"Epoch {epoch} ........ ->")
-            self.total_epochs += 1
-            loss = self._computeLossMeanPerMiniBatch(validation=False)
-            self.train_losses.append(loss)
-            with torch.no_grad():
-                # Performs evaluation using mini-batches
-                val_loss = self._computeLossMeanPerMiniBatch(validation=True)
-                self.val_losses.append(val_loss)
-                valMetric = self._computeMetricMiniBatch(self.val_loader)
-                self.val_metrics.append(valMetric)
-                if self.test_loader is not None:
-                    test_loss = self._computeLossMeanTestSet()
-                    self.test_losses.append(test_loss)
-                    testMetric = self._computeMetricMiniBatch(self.test_loader)
-                    self.test_metrics.append(testMetric)
+            print(f"Epoch {epoch} ........ -> of {n_epochs}")
+            with U.timeit():
+                self.total_epochs += 1
+                loss = self._computeLossMeanPerMiniBatch(validation=False)
+                self.train_losses.append(loss)
+                with torch.no_grad():
+                    # Performs evaluation using mini-batches
+                    val_loss = self._computeLossMeanPerMiniBatch(validation=True)
+                    self.val_losses.append(val_loss)
+                    valMetric = self._computeMetricMiniBatch(self.val_loader)
+                    self.val_metrics.append(valMetric)
+                    if self.test_loader is not None:
+                        test_loss = self._computeLossMeanTestSet()
+                        self.test_losses.append(test_loss)
+                        testMetric = self._computeMetricMiniBatch(self.test_loader)
+                        self.test_metrics.append(testMetric)
                     
             trainLogger.info(f"Epoch_{epoch}: trainLoss = {loss}: valLoss = {val_loss}: valMetric = {valMetric}; test_loss = {test_loss}; testMetric = {testMetric}")
         

@@ -42,11 +42,12 @@ class applyPermanentTransformation():
 class excecuteTraining():
     def __init__(self, cfg:DictConfig):
         args = cfg.parameters['dataLoaderArgs']
-        self.trainDataSet = D.customDataSet(cfg['trainingDataList'], normalize= cfg.parameters['normalize'])
+        normalize = cfg.parameters['normalize']
+        self.trainDataSet = D.customDataSet(cfg['trainingDataList'], normalize= normalize)
         self.train_DLoader = D.customDataloader(self.trainDataSet,args)   
-        self.valDataSet = D.customDataSet(cfg['validationDataList'],normalize= cfg.parameters['normalize'], validationMode = True)
+        self.valDataSet = D.customDataSet(cfg['validationDataList'],normalize= normalize, validationMode = True)
         self.val_DLoader = D.customDataloader(self.valDataSet,args)
-        self.testDataSet = D.customDataSet(cfg['testingDataList'], normalize= cfg.parameters['normalize'], validationMode = True)
+        self.testDataSet = D.customDataSet(cfg['testingDataList'], normalize= normalize, validationMode = True)
         self.test_DLoader = D.customDataloader(self.testDataSet,args)  
         model = OmegaConf.create(cfg.parameters['model'])
         self.model = instantiate(model)
