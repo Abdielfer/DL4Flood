@@ -1,7 +1,7 @@
 ## ~/config/OPS/configMac.ymal
 
 defaults:
-  - parameters: configTraining
+  - parameters: trainingParams
   - _self_
 
 work_dir: ${hydra:runtime.cwd}  # where the code is executed
