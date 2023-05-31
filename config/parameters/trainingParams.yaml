@@ -21,12 +21,11 @@ model:
 init_weigth:
   _partial_: True 
   _target_: torch.nn.init.kaiming_normal_
-  mode: fan_out
-  nonlinearity: relu
+initWeighParams: {mode:'fan_out', nonlinearity :'relu'}
 ## Loss
 loss_fn:
   _partial_: True 
-  _target_: scr.losses.lovasz_hinge #torch.nn.functional.binary_cross_entropy_with_logits # 
+  _target_: torch.nn.functional.binary_cross_entropy_with_logits # scr.losses.lovasz_hinge #
 ## Metric
 metric_fn :
   _partial_: True 
@@ -34,6 +33,6 @@ metric_fn :
 ## Optimizer
 optimizer:
   _target_: torch.optim.Adam
-  maximize : True
+  maximize : False
   lr: 0.000001
   weight_decay : 0.9

@@ -42,6 +42,8 @@ class applyPermanentTransformation():
 class excecuteTraining():
     def __init__(self, cfg:DictConfig):
         args = cfg.parameters['dataLoaderArgs']
+        self.initWeigthFunc = instantiate(OmegaConf.create(cfg.parameters['init_weigth']))
+        self.initWeigthParams = cfg.parameters['initWeighParams']
         normalize = cfg.parameters['normalize']
         self.trainDataSet = D.customDataSet(cfg['trainingDataList'], normalize= normalize)
         self.train_DLoader = D.customDataloader(self.trainDataSet,args)   
@@ -51,7 +53,6 @@ class excecuteTraining():
         self.test_DLoader = D.customDataloader(self.testDataSet,args)  
         model = OmegaConf.create(cfg.parameters['model'])
         self.model = instantiate(model)
-        self.init_weight = instantiate(OmegaConf.create(cfg.parameters['init_weigth']))
         self.loss_fn = instantiate(cfg.parameters['loss_fn'])
         criterion = OmegaConf.create(cfg.parameters['optimizer'])
         self.optimizer = instantiate(criterion, params=self.model.parameters())
@@ -59,7 +60,7 @@ class excecuteTraining():
         
     
     def excecute(self,epochs):
-        self.trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, self.init_weight)
+        self.trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, self.metric_fn, self.initWeigthFunc,self.initWeigthParams)
         self.trainer.set_loaders(self.train_DLoader,self.val_DLoader,self.test_DLoader)
         trainLosses, valLosses, testLosses = self.trainer.train(epochs)
         self.trainer.plot_losses()
@@ -84,6 +85,7 @@ def main(cfg: DictConfig):
     nameByTime = U.makeNameByTime()
     logging.info(f"Model saved as :{nameByTime}")
     logging.info(cfg.parameters.model)
+    logging.info(cfg.parameters.init_weigth)
     logging.info(cfg.parameters.loss_fn)
     logging.info(cfg.parameters.optimizer)
     trainer = excecuteTraining(cfg)

@@ -1,9 +1,0 @@
-[2023-05-31 09:42:14,266][root][INFO] - Model saved as :2305310942
-[2023-05-31 09:42:14,266][root][INFO] - {'_target_': 'model_set.models.UNetFlood', 'classes': 1, 'in_channels': 1, 'dropout': True, 'prob': 0.1}
-[2023-05-31 09:42:14,266][root][INFO] - {'_partial_': True, '_target_': 'torch.nn.functional.binary_cross_entropy_with_logits'}
-[2023-05-31 09:42:14,267][root][INFO] - {'_target_': 'torch.optim.Adam', 'maximize': False, 'lr': 1e-06, 'weight_decay': 0.9}
-[2023-05-31 09:47:13,378][scr.models_trainer][INFO] - Epoch_0: trainLoss = 0.6305163453565567: valLoss = 0.4825438905001885: valMetric = 0.0; test_loss = 0.5287504109644121; testMetric = 0.0
-[2023-05-31 09:52:03,742][scr.models_trainer][INFO] - Epoch_1: trainLoss = 0.6117518327436912: valLoss = 0.24996883365976152: valMetric = 0.0; test_loss = 0.2807653951708988; testMetric = 0.0
-[2023-05-31 09:56:56,403][scr.models_trainer][INFO] - Epoch_2: trainLoss = 0.5994787262320694: valLoss = 0.39089287630277664: valMetric = 0.0; test_loss = 0.3401646069301072; testMetric = 0.0
-[2023-05-31 10:01:53,491][scr.models_trainer][INFO] - Epoch_3: trainLoss = 0.5890633646635396: valLoss = 0.14511486197161913: valMetric = 0.0; test_loss = 0.09792644899058085; testMetric = 0.0
-[2023-05-31 10:06:49,360][scr.models_trainer][INFO] - Epoch_4: trainLoss = 0.5790630763531436: valLoss = 0.36335941991913856: valMetric = 0.0; test_loss = 0.29150697364602035; testMetric = 0.0

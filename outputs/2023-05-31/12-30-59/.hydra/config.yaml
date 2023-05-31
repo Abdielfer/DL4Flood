@@ -18,6 +18,12 @@ parameters:
     in_channels: 1
     dropout: true
     prob: 0.1
+  init_weigth:
+    _partial_: true
+    _target_: torch.nn.init.kaiming_normal_
+  initWeighParams:
+    mode:'fan_out': null
+    nonlinearity :'relu': null
   loss_fn:
     _partial_: true
     _target_: torch.nn.functional.binary_cross_entropy_with_logits

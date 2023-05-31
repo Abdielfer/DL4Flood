@@ -20,7 +20,6 @@ class models_trainer(object):
     def __init__(self, model, loss_fn, optimizer, metric, init_func = None, *params, **kwargs):
         self.model = model
         if init_func is not None:
-            trainLogger.info("Weight initialization function: {init_func}")
             self.init_all(self.model, init_func, *params, **kwargs) 
         self.loss_fn = loss_fn
         self.optimizer = optimizer
