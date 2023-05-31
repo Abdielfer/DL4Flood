@@ -66,7 +66,7 @@ class excecuteTraining():
         self.trainer.plot_losses()
         return self.model, [trainLosses, valLosses, testLosses]
 
-@hydra.main(version_base=None, config_path=f"config", config_name="configPC.yaml")
+@hydra.main(version_base=None, config_path=f"config", config_name="configVelum.yaml")
 def main(cfg: DictConfig):
     # ## Spliting Trn-Val
     # trnList, valList = U.splitPerRegion(cfg['rawDataList'])
