@@ -1,6 +1,6 @@
 parameters:
   targetColName: percentage
-  epochs: 150
+  epochs: 6
   dataLoaderArgs:
     batch_size: 1
     num_workers: 4
@@ -26,8 +26,8 @@ parameters:
     _target_: scr.losses.iou_binary
   optimizer:
     _target_: torch.optim.Adam
-    maximize: true
-    lr: 0.001
+    maximize: false
+    lr: 1.0e-06
     weight_decay: 0.9
 work_dir: ${hydra:runtime.cwd}
 config_name: ${hydra:job.config_name}

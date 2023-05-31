@@ -1,4 +1,0 @@
-[2023-05-26 12:42:14,625][root][INFO] - Model saved as :2305261242
-[2023-05-26 12:42:14,625][root][INFO] - {'_target_': 'model_set.models.UNetFlood', 'classes': 1, 'in_channels': 1, 'dropout': True, 'prob': 0.1}
-[2023-05-26 12:42:14,626][root][INFO] - {'_partial_': True, '_target_': 'scr.losses.lovasz_hinge'}
-[2023-05-26 12:42:14,626][root][INFO] - {'_target_': 'torch.optim.Adam', 'maximize': True, 'lr': 5e-07, 'weight_decay': 0.9}

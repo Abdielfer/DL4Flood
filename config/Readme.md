@@ -1,5 +1,6 @@
 Here we summarize some supported (tested) models, losses, metrics and optimizers configurations.
-You can simply copy-paste the section into the coniguration/parameters 
+You can simply copy-paste the "_target_" in the righ section of the configuration/parameters *.yaml file. The other elements of each section are presented for gidance porpouse. 
+
 ##  Model
 model:
   _target_: model_set.models.UNetFlood
@@ -11,7 +12,8 @@ model:
 ## Loss ###
 loss_fn:
   _partial_: True 
-  _target_: torch.nn.functional.binary_cross_entropy_with_logits #scr.losses.lovasz_hinge 
+  _target_: torch.nn.functional.binary_cross_entropy_with_logits 
+  _target_: scr.losses.lovasz_hinge 
 
 ## Metric ##
 metric_fn :

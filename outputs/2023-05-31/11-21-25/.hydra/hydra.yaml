@@ -140,9 +140,9 @@ hydra:
     - path: ''
       schema: structured
       provider: schema
-    output_dir: C:\Users\abfernan\CrossCanFloodMapping\DL4Flood\outputs\2023-05-27\15-56-17
+    output_dir: C:\Users\abfernan\CrossCanFloodMapping\DL4Flood\outputs\2023-05-31\11-21-25
     choices:
-      parameters: configTraining
+      parameters: trainingParams
       hydra/env: default
       hydra/callbacks: null
       hydra/job_logging: default
