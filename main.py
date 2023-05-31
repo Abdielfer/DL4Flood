@@ -51,6 +51,7 @@ class excecuteTraining():
         self.test_DLoader = D.customDataloader(self.testDataSet,args)  
         model = OmegaConf.create(cfg.parameters['model'])
         self.model = instantiate(model)
+        self.init_weight = instantiate(OmegaConf.create(cfg.parameters['init_weigth']))
         self.loss_fn = instantiate(cfg.parameters['loss_fn'])
         criterion = OmegaConf.create(cfg.parameters['optimizer'])
         self.optimizer = instantiate(criterion, params=self.model.parameters())
@@ -58,7 +59,7 @@ class excecuteTraining():
         
     
     def excecute(self,epochs):
-        self.trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, self.metric_fn,init_func=kaiming_normal_ , mode='fan_out', nonlinearity='relu')
+        self.trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, self.init_weight)
         self.trainer.set_loaders(self.train_DLoader,self.val_DLoader,self.test_DLoader)
         trainLosses, valLosses, testLosses = self.trainer.train(epochs)
         self.trainer.plot_losses()

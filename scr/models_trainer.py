@@ -20,6 +20,7 @@ class models_trainer(object):
     def __init__(self, model, loss_fn, optimizer, metric, init_func = None, *params, **kwargs):
         self.model = model
         if init_func is not None:
+            trainLogger.info("Weight initialization function: {init_func}")
             self.init_all(self.model, init_func, *params, **kwargs) 
         self.loss_fn = loss_fn
         self.optimizer = optimizer
@@ -171,13 +172,8 @@ class models_trainer(object):
                     
             trainLogger.info(f"Epoch_{epoch}: trainLoss = {loss}: valLoss = {val_loss}: valMetric = {valMetric}; test_loss = {test_loss}; testMetric = {testMetric}")
         
-        
-        trainLogger.info(f"Train losses after {n_epochs} epochs : {self.train_losses}")
-        trainLogger.info(f"Validation losses after {n_epochs} epochs : {self.val_losses}")
-        trainLogger.info(f"Validation metrics in {n_epochs} epochs : {self.val_metrics}")
-        trainLogger.info(f"Test losses after {n_epochs} epochs : {self.test_losses}")
-        trainLogger.info(f"Test metrics in {n_epochs} epochs : {self.test_metrics}")
-        
+        self.call_logs(n_epochs)
+       
         return self.train_losses, self.val_losses, self.test_losses 
 
     def save_checkpoint(self, filename):
@@ -259,6 +255,15 @@ class models_trainer(object):
     def _testLogs_(self)->None:
         trainLogger.info(f"Test comming from model_trainer")
     
-         
+    def call_logs(self, n_epochs):
+        '''
+        Add logs as needed. 
+        '''
+        trainLogger.info(f"Train losses after {n_epochs} epochs : {self.train_losses}")
+        trainLogger.info(f"Validation losses after {n_epochs} epochs : {self.val_losses}")
+        trainLogger.info(f"Validation metrics in {n_epochs} epochs : {self.val_metrics}")
+        trainLogger.info(f"Test losses after {n_epochs} epochs : {self.test_losses}")
+        trainLogger.info(f"Test metrics in {n_epochs} epochs : {self.test_metrics}")
+        
 
     
