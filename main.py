@@ -60,7 +60,7 @@ class excecuteTraining():
         
     
     def excecute(self,epochs):
-        self.trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, self.metric_fn, self.initWeigthFunc,self.initWeigthParams)
+        self.trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, self.metric_fn, self.initWeightFunc,self.initWeightParams)
         self.trainer.set_loaders(self.train_DLoader,self.val_DLoader,self.test_DLoader)
         trainLosses, valLosses, testLosses = self.trainer.train(epochs)
         self.trainer.plot_losses()
