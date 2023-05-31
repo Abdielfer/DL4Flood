@@ -42,8 +42,8 @@ class applyPermanentTransformation():
 class excecuteTraining():
     def __init__(self, cfg:DictConfig):
         args = cfg.parameters['dataLoaderArgs']
-        self.initWeigthFunc = instantiate(OmegaConf.create(cfg.parameters['init_weigth']))
-        self.initWeigthParams = cfg.parameters['initWeighParams']
+        self.initWeightFunc = instantiate(OmegaConf.create(cfg.parameters['init_weight']))
+        self.initWeightParams = cfg.parameters['initWeightParams']
         normalize = cfg.parameters['normalize']
         self.trainDataSet = D.customDataSet(cfg['trainingDataList'], normalize= normalize)
         self.train_DLoader = D.customDataloader(self.trainDataSet,args)   
@@ -85,7 +85,7 @@ def main(cfg: DictConfig):
     nameByTime = U.makeNameByTime()
     logging.info(f"Model saved as :{nameByTime}")
     logging.info(cfg.parameters.model)
-    logging.info(cfg.parameters.init_weigth)
+    logging.info(cfg.parameters.init_weight)
     logging.info(cfg.parameters.loss_fn)
     logging.info(cfg.parameters.optimizer)
     trainer = excecuteTraining(cfg)

@@ -18,10 +18,10 @@ model:
   in_channels : 1
   dropout: True   # (bool) Use dropout or not
   prob: 0.1  # float: 0. - 0.99
-init_weigth:
+init_weight:
   _partial_: True 
   _target_: torch.nn.init.kaiming_normal_
-initWeighParams: {mode:'fan_out', nonlinearity :'relu'}
+initWeightParams: {mode:'fan_out', nonlinearity :'relu'}
 ## Loss
 loss_fn:
   _partial_: True 

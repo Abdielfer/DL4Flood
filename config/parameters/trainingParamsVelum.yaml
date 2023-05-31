@@ -3,6 +3,7 @@
 targetColName: percentage
 epochs : 150
 dataLoaderArgs :  {'batch_size': 1, 'num_workers': 4,'drop_last': True}
+normalize : True
 scheduler: plateau
 makeTest: True
 hydra: default
@@ -10,20 +11,28 @@ override hydra/hydra_logging: colorlog # enable color logging to make it pretty
 override hydra/job_logging: colorlog # enable color logging to make it pretty
 modelMode: train
 # @package _global_
+##  Model
 model:
   _target_: model_set.models.UNetFlood
   classes : 1
   in_channels : 1
   dropout: True   # (bool) Use dropout or not
   prob: 0.1  # float: 0. - 0.99
+init_weight:
+  _partial_: True 
+  _target_: torch.nn.init.kaiming_normal_
+initWeightParams: {mode:'fan_out', nonlinearity :'relu'}
+## Loss
 loss_fn:
   _partial_: True 
-  _target_: scr.losses.lovasz_hinge 
+  _target_: torch.nn.functional.binary_cross_entropy_with_logits # scr.losses.lovasz_hinge #
+## Metric
 metric_fn :
-  _target_: scr.losses.iou_binary
-  _partial_: True  
+  _partial_: True 
+  _target_: scr.losses.iou_binary 
+## Optimizer
 optimizer:
   _target_: torch.optim.Adam
-  maximize : True
-  lr: 0.0000005
+  maximize : False
+  lr: 0.000001
   weight_decay : 0.9
