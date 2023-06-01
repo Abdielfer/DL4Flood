@@ -86,6 +86,7 @@ def main(cfg: DictConfig):
     logging.info(f"Model saved as :{nameByTime}")
     logging.info(cfg.parameters.model)
     logging.info(cfg.parameters.init_weight)
+    logging.info(f"Parameters of weights initialization: {cfg.parameters['initWeightParams']}")
     logging.info(cfg.parameters.loss_fn)
     logging.info(cfg.parameters.optimizer)
     trainer = excecuteTraining(cfg)

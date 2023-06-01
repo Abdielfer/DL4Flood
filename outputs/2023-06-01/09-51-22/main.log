@@ -1,0 +1,6 @@
+[2023-06-01 09:51:23,023][root][INFO] - Model saved as :2306010951
+[2023-06-01 09:51:23,023][root][INFO] - {'_target_': 'model_set.models.UNetFlood', 'classes': 1, 'in_channels': 1, 'dropout': True, 'prob': 0.1}
+[2023-06-01 09:51:23,023][root][INFO] - {'_partial_': True, '_target_': 'torch.nn.init.kaiming_normal_'}
+[2023-06-01 09:51:23,023][root][INFO] - Parameters of weights initialization: {"mode:'fan_out'": None, "nonlinearity :'relu'": None}
+[2023-06-01 09:51:23,023][root][INFO] - {'_partial_': True, '_target_': 'torch.nn.functional.binary_cross_entropy_with_logits'}
+[2023-06-01 09:51:23,024][root][INFO] - {'_target_': 'torch.optim.Adam', 'maximize': False, 'lr': 1e-06, 'weight_decay': 0.9}
