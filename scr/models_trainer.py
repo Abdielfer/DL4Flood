@@ -219,8 +219,7 @@ class models_trainer(object):
         plt.legend()
         plt.tight_layout()
         fig.show()
-         
-   
+           
     def set_seed(self, seed=42):
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False    
