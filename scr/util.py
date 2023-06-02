@@ -287,11 +287,9 @@ def listFreeFilesInDirByExt(cwd, ext = '.tif'):
     '''
     file_list = []
     for (root, dirs, file) in os.walk(cwd):
-        print(f"Root in velum {root} ")
         for f in file:
             _,_,extent = get_parenPath_name_ext(f)
             if extent == ext:
-                print(f" Thhis is the fond extention {extent} vs the rial ext {ext} ")
                 file_list.append(f)
     return file_list
 
@@ -303,7 +301,6 @@ def listFreeFilesInDirByExt_fullPath(cwd, ext = '.csv'):
     file_list = []
     for (root,_, file) in os.walk(cwd, followlinks=True):
         for f in file:
-            print(f"F in file {f} ")
             _,extent = splitFilenameAndExtention(f)
             if ext == extent:
                 file_list.append(os.path.join(root,f))
@@ -326,9 +323,9 @@ def listALLFilesInDirByExt_fullPath(cwd, ext = '.csv'):
     '''
     fullList = []
     for (root, _, _) in os.walk(cwd):
-        print(f"Roots {root}")
+        # print(f"Roots {root}")
         localList = listFreeFilesInDirByExt_fullPath(root, ext)
-        print(f"Local List len :-->> {len(localList)}")
+        # print(f"Local List len :-->> {len(localList)}")
         fullList.extend(localList) 
     return fullList
 
@@ -482,9 +479,7 @@ def makeMatching_TifMask_List(scvPath,tifDir,delim:str =',',)->list:
     matchingList =[]
     tifList = listALLFilesInDirByExt(tifDir, ext='.tif')
     matchingList = [tif for tif in tifList if any([tif in item for item in csvList])] 
-    
-    print(f"Matching list len: -> {len(matchingList)}")
-       
+    print(f"Matching list len: -> {len(matchingList)}")   
     csvList = createCSVFromList(scvPath,matchingList, delim = delim)
     return matchingList
    
@@ -493,7 +488,6 @@ def checkDevice():
     return 'cuda' if torch.cuda.is_available() else 'cpu'
 
  ### Metrics ####  
-
 def accuracyFromConfusionMatrix(confusion_matrix):
     '''
     Only for binary
@@ -508,7 +502,6 @@ def pritnAccuracy(y_predic, y_val):
     '''
     cm = confusion_matrix(y_predic, y_val) 
     print("Accuracy of MLPClassifier : ", accuracyFromConfusionMatrix(cm)) 
-
 
 ###########            
 ### GIS ###
@@ -633,7 +626,6 @@ def plotHistogram(raster, bins: int=50, bandNumber: int = 1):
     show_hist(source=raster, bins=bins, title= f"Histogram of {bandNumber} bands", 
           histtype='stepfilled', alpha=0.5)
     return True
-
 
 #### Compute globals Mean and STD from a set of ranter imkages###
 class standardizer():
