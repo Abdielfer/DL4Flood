@@ -60,13 +60,13 @@ class excecuteTraining():
         
     
     def excecute(self,epochs):
-        self.trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, self.metric_fn, self.initWeigthFunc,self.initWeigthParams)
+        self.trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, self.metric_fn, self.initWeightFunc,self.initWeightParams)
         self.trainer.set_loaders(self.train_DLoader,self.val_DLoader,self.test_DLoader)
         trainLosses, valLosses, testLosses = self.trainer.train(epochs)
         self.trainer.plot_losses()
         return self.model, [trainLosses, valLosses, testLosses]
 
-@hydra.main(version_base=None, config_path=f"config", config_name="configPC.yaml")
+@hydra.main(version_base=None, config_path=f"config", config_name="configVelum.yaml")
 def main(cfg: DictConfig):
     # ## Spliting Trn-Val
     # trnList, valList = U.splitPerRegion(cfg['rawDataList'])
@@ -86,6 +86,7 @@ def main(cfg: DictConfig):
     logging.info(f"Model saved as :{nameByTime}")
     logging.info(cfg.parameters.model)
     logging.info(cfg.parameters.init_weight)
+    logging.info(f"Parameters of weights initialization: {cfg.parameters['initWeightParams']}")
     logging.info(cfg.parameters.loss_fn)
     logging.info(cfg.parameters.optimizer)
     trainer = excecuteTraining(cfg)
