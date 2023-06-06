@@ -214,7 +214,6 @@ class EncodingBlockFlood(nn.Module):
         output = self.EncodingBlock(input_data)
         return output
 
-
 class UNetFlood(nn.Module):
     """Main UNet architecture
     - This vertion is adapted to small input images, considering higher resolution DTM inputs. 
@@ -287,4 +286,62 @@ class UNetFlood(nn.Module):
         # print('Final shape after interpolating self.final(decode1), input_data.size()[2:]:', final.shape)
         
         return final
+
+
+class UNetClassiFlood(nn.Module):
+    """Main UNet architecture
+    - This vertion is adapted to small input images, considering higher resolution DTM inputs. 
+    NOTE: Flood context in genereal is well described by a short distance from the river ( max 1000m).
+    This is an "in progress" experiment. (Marz 21st 2023)
+    @classes: Number of classes.
+    @in_channels: Number of channels in the input image. 
+    """
+
+    def __init__(self, classes, in_channels, dropout:bool = True, prob:float = 0.5):
+        super().__init__()
+        self.classes = classes
+        self.conv1 = EncodingBlockFlood(in_channels, 64, dropout=dropout, prob=prob)
+        self.maxpool1 = nn.MaxPool2d(kernel_size=2)
+        self.conv2 = EncodingBlockFlood(64, 128, dropout=dropout, prob=prob)
+        self.maxpool2 = nn.MaxPool2d(kernel_size=2)
+        self.conv3 = EncodingBlockFlood(128, 256, dropout=dropout, prob=prob)
+        self.maxpool3 = nn.MaxPool2d(kernel_size=2)
+        self.conv4 = EncodingBlockFlood(256, 512, dropout=dropout, prob=prob)
+        self.maxpool4 = nn.MaxPool2d(kernel_size=2)
+
+        self.center = EncodingBlockFlood(512, 1024, dropout=dropout, prob=prob)
+
+        self.decode4 = DecodingBlockFlood(1024, 512)
+        self.decode3 = DecodingBlockFlood(512, 256)
+        self.decode2 = DecodingBlockFlood(256, 128)
+        self.decode1 = DecodingBlockFlood(128, 64)
+
+        self.final = nn.Conv2d(64, classes, kernel_size=1)
+        
+        #TODO:  Add a linear layer 
+        
+        x = torch.flatten(x, 1)
+
+    def forward(self, input_data):
+        conv1 = self.conv1(input_data)
+        maxpool1 = self.maxpool1(conv1)
+        conv2 = self.conv2(maxpool1)
+        maxpool2 = self.maxpool2(conv2)
+        conv3 = self.conv3(maxpool2)
+        maxpool3 = self.maxpool3(conv3)
+        conv4 = self.conv4(maxpool3)
+        maxpool4 = self.maxpool4(conv4)
+        center = self.center(maxpool4)
+        decode4 = self.decode4(conv4, center)
+        decode3 = self.decode3(conv3, decode4)
+        decode2 = self.decode2(conv2, decode3)
+        decode1 = self.decode1(conv1, decode2)
+        selfFinal = self.final(decode1)
+        final = nn.functional.interpolate(selfFinal, input_data.size()[2:], mode='bilinear', align_corners=True)
+
+        #TODO:  Add a linear layer 
+
+        return final
+
+
 
