@@ -15,7 +15,7 @@
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Environments
+# Environments  # IMPORTAN: Add the folder name of your local Venv !!!
 .env
 .venv
 env/
@@ -25,3 +25,5 @@ env.bak/
 venv.bak/
 venvFlood/
 
+# Output files 
+outputs/
