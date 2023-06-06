@@ -87,7 +87,6 @@ class Upsample(nn.Module):
 
 '''
 
-
 class UNet(nn.Module):
     """Main UNet architecture """
 
@@ -308,20 +307,15 @@ class UNetClassiFlood(nn.Module):
         self.maxpool3 = nn.MaxPool2d(kernel_size=2)
         self.conv4 = EncodingBlockFlood(256, 512, dropout=dropout, prob=prob)
         self.maxpool4 = nn.MaxPool2d(kernel_size=2)
-
         self.center = EncodingBlockFlood(512, 1024, dropout=dropout, prob=prob)
-
         self.decode4 = DecodingBlockFlood(1024, 512)
         self.decode3 = DecodingBlockFlood(512, 256)
         self.decode2 = DecodingBlockFlood(256, 128)
         self.decode1 = DecodingBlockFlood(128, 64)
-
-        self.final = nn.Conv2d(64, classes, kernel_size=1)
+        self.final2DConv = nn.Conv2d(64, classes, kernel_size=1)
+        self.linear = nn.Conv2d(classes, classes, kernel_size=1)
+        self.output = nn.Softmax2d()
         
-        #TODO:  Add a linear layer 
-        
-        x = torch.flatten(x, 1)
-
     def forward(self, input_data):
         conv1 = self.conv1(input_data)
         maxpool1 = self.maxpool1(conv1)
@@ -336,12 +330,12 @@ class UNetClassiFlood(nn.Module):
         decode3 = self.decode3(conv3, decode4)
         decode2 = self.decode2(conv2, decode3)
         decode1 = self.decode1(conv1, decode2)
-        selfFinal = self.final(decode1)
-        final = nn.functional.interpolate(selfFinal, input_data.size()[2:], mode='bilinear', align_corners=True)
-
-        #TODO:  Add a linear layer 
-
-        return final
+        lastConv2D = self.final2DConv(decode1)
+        interpolation = nn.functional.interpolate(lastConv2D, input_data.size()[2:], mode='bilinear', align_corners=True)
+        linear1 = self.linear(interpolation)
+        linear2 = self.linear(linear1)
+        finalSoftMax = self.output(linear2)
+        return finalSoftMax
 
 
 
