@@ -23,7 +23,5 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-lib/
-bin/
-share/
+
 
