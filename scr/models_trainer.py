@@ -246,6 +246,11 @@ class models_trainer(object):
         self.writer = SummaryWriter(f'{folder}/{name}_{suffix}')
 
     def init_all(self, model, init_func, *params, **kwargs):
+        '''
+        Methode to initialize the model's parameters, according a function <init_func>,
+            and the necessary arguments <*params, **kwargs>. 
+        Change the type of <p> in <if type(p) == torch.nn.Conv2d:> for a different behavior. 
+        '''
         for p in model.parameters():
             if type(p) == torch.nn.Conv2d:
                 init_func(p, *params, **kwargs)
