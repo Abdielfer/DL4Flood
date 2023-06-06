@@ -66,8 +66,20 @@ class excecuteTraining():
         self.trainer.plot_losses()
         return self.model, [trainLosses, valLosses, testLosses]
 
-@hydra.main(version_base=None, config_path=f"config", config_name="configVelum.yaml")
+def logger(cfg: DictConfig, nameByTime):
+    '''
+    You can log all you want here!
+    '''
+    logging.info(f"Model saved as :{nameByTime}")
+    logging.info(cfg.parameters.model)
+    logging.info(cfg.parameters.init_weight)
+    logging.info(f"Parameters of weights initialization: {cfg.parameters['initWeightParams']}")
+    logging.info(cfg.parameters.loss_fn)
+    logging.info(cfg.parameters.optimizer)        
+
+@hydra.main(version_base=None, config_path=f"config", config_name="configPC.yaml")
 def main(cfg: DictConfig):
+    nameByTime = U.makeNameByTime()
     # ## Spliting Trn-Val
     # trnList, valList = U.splitPerRegion(cfg['rawDataList'])
     # U.createCSVFromList(cfg['trainingDataList'], trnList)
@@ -82,13 +94,7 @@ def main(cfg: DictConfig):
     # print(MinMaxMeanSTD)
     
     ## Training cycle
-    nameByTime = U.makeNameByTime()
-    logging.info(f"Model saved as :{nameByTime}")
-    logging.info(cfg.parameters.model)
-    logging.info(cfg.parameters.init_weight)
-    logging.info(f"Parameters of weights initialization: {cfg.parameters['initWeightParams']}")
-    logging.info(cfg.parameters.loss_fn)
-    logging.info(cfg.parameters.optimizer)
+    logger(cfg,nameByTime)
     trainer = excecuteTraining(cfg)
     model,_ = trainer.excecute(cfg.parameters['epochs'])
     U.saveModel(model,nameByTime)

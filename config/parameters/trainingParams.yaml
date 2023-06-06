@@ -3,7 +3,7 @@
 targetColName: percentage
 epochs : 150
 dataLoaderArgs :  {'batch_size': 1, 'num_workers': 4,'drop_last': True}
-normalize : True
+normalize : False
 scheduler: plateau
 makeTest: True
 hydra: default
@@ -35,4 +35,4 @@ optimizer:
   _target_: torch.optim.Adam
   maximize : False
   lr: 0.000001
-  weight_decay : 0.9
+  weight_decay : 0.1
