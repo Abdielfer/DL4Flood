@@ -126,7 +126,7 @@ def flatten_binary_scores(scores, labels, ignore=None):
     return vscores, vlabels
 
 
-def binaryAccuracy( pred, label, threshold:float = 0.7)  -> float:
+def binaryAccuracy( pred, label, threshold:float = 0.5)  -> float:
         '''
         Compute binary accuracy in tensors of one dimention .
         Expected tensot of size [H,W] (Only one channel to be flattened)
@@ -227,7 +227,7 @@ def flatten_probas(probas, labels, ignore=None):
     vlabels = labels[valid]
     return vprobas, vlabels
 
-def xloss(logits, labels, ignore=None):
+def xloss(logits, labels):
     """
     Cross entropy loss
     """

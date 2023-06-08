@@ -109,45 +109,21 @@ class models_trainer(object):
             mini_batch_losses.append(mini_batch_loss)
         return np.mean(mini_batch_losses)
     
-    def _computeMetricPerMiniBatch(self, data_loader):
-        '''
-        Return de mean per batch of the metric in self.metric  
-        '''
-        miniBathcMetric = []
-        for x_batch, y_batch in data_loader:
-            metric=[]
-            for x,y in zip(x_batch, y_batch):
-                yHat = self.model(torch.unsqueeze(x,0))
-                y_hat_sigmoid = torch.round(torch.sigmoid(yHat)).to(torch.int32)
-                y_item= y.numpy() if torch.is_tensor(y) else y.numpy().squeeze()
-                y_hat_item = y_hat_sigmoid.detach().cpu().numpy().squeeze() if torch.is_tensor(y_hat_sigmoid) else y_hat_sigmoid.numpy().squeeze()
-                metricPerImage = self.metric_fn(y_hat_item, y_item)
-                metric.append(metricPerImage)    
-            ItemMetric = round(np.mean(metric),2)
-            miniBathcMetric.append(ItemMetric)
-        metricMean = round(np.mean(miniBathcMetric),2)
-        return metricMean
-    
+   
     def _computeMetricMiniBatch(self, data_loader)-> float:
         '''
         Return de mean per batch of the metric in self.metric  
         '''
-        metrics = {}
         miniBathcMetric = []
         for x_batch, y_batch in data_loader:
             metric=[]
             for x,y in zip(x_batch, y_batch):
                 yHat = self.predict(x)
                 y_item= y.detach().cpu().numpy() if torch.is_tensor(y) else y.squeeze().detach().cpu()
-                # y_hat_item = y_hat_item.detach().numpy().squeeze() if torch.is_tensor(y_hat_item) else y_hat_item.numpy().squeeze()
                 metric.append(self.metric_fn(yHat, y_item))
             ItemMetric = np.mean(metric)
-            # print(f"ItemMetric : {ItemMetric}")
             miniBathcMetric.append(ItemMetric)
-        # print(f"miniBathcMetric : {miniBathcMetric} ")
-        metricMean = np.mean(miniBathcMetric)
-        metrics[str(self.metric_fn)] = metricMean
-        return metricMean
+        return round(np.mean(miniBathcMetric),5)
 
     def train(self, n_epochs, seed=42):
         self.set_seed(seed)
@@ -254,9 +230,6 @@ class models_trainer(object):
         for p in model.parameters():
             if type(p) == torch.nn.Conv2d:
                 init_func(p, *params, **kwargs)
-
-    def _testLogs_(self)->None:
-        trainLogger.info(f"Test comming from model_trainer")
     
     def call_logs(self, n_epochs):
         '''
