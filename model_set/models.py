@@ -331,6 +331,24 @@ class EncodingBlockClassiFlood(nn.Module):
         output = self.EncodingBlock(input_data)
         return output
 
+class DecodingBlockClassi(nn.Module):
+    """Module in the decoding section of the UNet"""
+
+    def __init__(self, in_size, out_size, batch_norm=False, upsampling=True):
+        super().__init__()
+        if upsampling:
+            self.up = nn.Sequential(Interpolate(mode='bilinear', scale_factor=2),
+                                    nn.Conv2d(in_size, out_size, kernel_size=1))
+        else:
+            self.up = nn.ConvTranspose2d(in_size, out_size, kernel_size=2, stride=2)
+
+        self.conv = EncodingBlockClassiFlood(in_size, out_size, batch_norm=batch_norm)
+
+    def forward(self, input1, input2):
+        output2 = self.up(input2)
+        output1 = nn.functional.interpolate(input1, output2.size()[2:], mode='bilinear', align_corners=True)
+        return self.conv(torch.cat([output1, output2], 1))
+
 class UNetClassiFlood(nn.Module):
     """Main UNet architecture
     - This vertion is adapted to small input images, considering higher resolution DTM inputs. 
@@ -343,19 +361,19 @@ class UNetClassiFlood(nn.Module):
     def __init__(self, classes, in_channels, dropout:bool = True, prob:float = 0.5):
         super().__init__()
         self.classes = classes
-        self.conv1 = EncodingBlockFlood(in_channels, 64, dropout=dropout, prob=prob)
+        self.conv1 = EncodingBlockClassiFlood(in_channels, 64, dropout=dropout, prob=prob)
         self.maxpool1 = nn.MaxPool2d(kernel_size=2)
-        self.conv2 = EncodingBlockFlood(64, 128, dropout=dropout, prob=prob)
+        self.conv2 = EncodingBlockClassiFlood(64, 128, dropout=dropout, prob=prob)
         self.maxpool2 = nn.MaxPool2d(kernel_size=2)
-        self.conv3 = EncodingBlockFlood(128, 256, dropout=dropout, prob=prob)
+        self.conv3 = EncodingBlockClassiFlood(128, 256, dropout=dropout, prob=prob)
         self.maxpool3 = nn.MaxPool2d(kernel_size=2)
-        self.conv4 = EncodingBlockFlood(256, 512, dropout=dropout, prob=prob)
+        self.conv4 = EncodingBlockClassiFlood(256, 512, dropout=dropout, prob=prob)
         self.maxpool4 = nn.MaxPool2d(kernel_size=2)
-        self.center = EncodingBlockFlood(512, 1024, dropout=dropout, prob=prob)
-        self.decode4 = DecodingBlockFlood(1024, 512)
-        self.decode3 = DecodingBlockFlood(512, 256)
-        self.decode2 = DecodingBlockFlood(256, 128)
-        self.decode1 = DecodingBlockFlood(128, 64)
+        self.center = EncodingBlockClassiFlood(512, 1024, dropout=dropout, prob=prob)
+        self.decode4 = DecodingBlockClassi(1024, 512)
+        self.decode3 = DecodingBlockClassi(512, 256)
+        self.decode2 = DecodingBlockClassi(256, 128)
+        self.decode1 = DecodingBlockClassi(128, 64)
         self.final2DConv = nn.Conv2d(64, classes, kernel_size=1)
         self.linear = nn.Conv2d(classes, classes, kernel_size=1)
         self.LRelu = nn.LeakyReLU()
