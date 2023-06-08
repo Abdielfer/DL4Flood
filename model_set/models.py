@@ -314,6 +314,7 @@ class UNetClassiFlood(nn.Module):
         self.decode1 = DecodingBlockFlood(128, 64)
         self.final2DConv = nn.Conv2d(64, classes, kernel_size=1)
         self.linear = nn.Conv2d(classes, classes, kernel_size=1)
+        self.LRelu = nn.LeakyReLU(inplace=True)
         self.output = nn.Softmax2d()
         
     def forward(self, input_data):
@@ -333,8 +334,11 @@ class UNetClassiFlood(nn.Module):
         lastConv2D = self.final2DConv(decode1)
         interpolation = nn.functional.interpolate(lastConv2D, input_data.size()[2:], mode='bilinear', align_corners=True)
         linear1 = self.linear(interpolation)
-        linear2 = self.linear(linear1)
-        finalSoftMax = self.output(linear2)
+        linear1Activated = self.LRelu(linear1)
+        linear2 = self.linear(linear1Activated)
+        linear2Activated = self.LRelu(linear2)
+        linear3 = self.linear(linear2Activated)
+        finalSoftMax = self.output(linear3)
         return finalSoftMax
 
 

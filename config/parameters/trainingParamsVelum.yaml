@@ -17,7 +17,7 @@ model:
   classes : 1
   in_channels : 1
   dropout: True   # (bool) Use dropout or not
-  prob: 0.01  # float: 0. - 0.99
+  prob: 0.1 # float: 0. - 0.99
 init_weight:
   _partial_: True 
   _target_: torch.nn.init.kaiming_normal_
@@ -25,7 +25,7 @@ initWeightParams: {mode:'fan_out', nonlinearity :'relu'}
 ## Loss
 loss_fn:
   _partial_: True 
-  _target_: torch.nn.functional.binary_cross_entropy_with_logits # scr.losses.lovasz_hinge #
+  _target_: scr.losses.lovasz_hinge #  torch.nn.functional.binary_cross_entropy_with_logits 
 ## Metric
 metric_fn :
   _partial_: True 
@@ -33,6 +33,6 @@ metric_fn :
 ## Optimizer
 optimizer:
   _target_: torch.optim.Adam
-  maximize : False
-  lr: 0.00000001
-  weight_decay : 0.9
+  maximize : True
+  lr: 0.000001
+  weight_decay : 0.5
