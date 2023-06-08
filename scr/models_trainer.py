@@ -109,7 +109,7 @@ class models_trainer(object):
             mini_batch_losses.append(mini_batch_loss)
         return np.mean(mini_batch_losses)
     
-   
+
     def _computeMetricMiniBatch(self, data_loader)-> float:
         '''
         Return de mean per batch of the metric in self.metric  
