@@ -9,6 +9,7 @@ config_name: ${hydra:job.config_name}
 config_override_dirname: ${hydra:job.override_dirname}
 config_path: ${hydra:runtime.config_sources}
 projectRoot: /home/abfernan/CrossCanFloodMap/DL4Flood/
+saveModelsPath: ${hydra:runtime.cwd} 
 
 dataRoot:  /home/abfernan/CrossCanFloodMap/DatasetCNNFlood/C1Dataset 
 rawDataList: ${dataRoot}/Percentage_1/Percentage_1_feat1_min-annot1_trn.csv
