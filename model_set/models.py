@@ -43,7 +43,6 @@ class EncodingBlock(nn.Module):
         output = self.EncodingBlock(input_data)
         return output
 
-
 class Interpolate(torch.nn.Module):
     def __init__(self, mode, scale_factor):
         super(Interpolate, self).__init__()
@@ -286,6 +285,51 @@ class UNetFlood(nn.Module):
         
         return final
 
+####   UNet Classi Flood  ####
+
+class EncodingBlockClassiFlood(nn.Module):
+    '''
+    Convolutional batch norm block with LeakyRelu(instead of Relu) activation (main block used in the encoding steps)
+    The different in this version: padding = 0. As in the original paper, at eahc conv2D we loss a 
+    2 pixel in H and W. 
+    Differences vs original EncodingBlock:
+     Since we do not have enough knowledge regarding flood modeling from DEM with CNN, we intend to       prevent the loss of some weights (zero values) in the convolution process.  
+    
+    '''
+    def __init__(self, in_size, out_size, kernel_size=3, padding=0, stride=1, dilation=1, batch_norm=True, dropout=False, prob=0.5):
+        super().__init__()
+
+        if batch_norm:
+            # reflection padding for same size output as input (reflection padding has shown better results than zero padding)
+            layers = [nn.ReflectionPad2d(padding=0),
+                      nn.Conv2d(in_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
+                                dilation=dilation),
+                      nn.LeakyReLU(),
+                      nn.BatchNorm2d(out_size),
+                      nn.ReflectionPad2d(padding=0),
+                      nn.Conv2d(out_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
+                                dilation=dilation),
+                      nn.LeakyReLU(),
+                      nn.BatchNorm2d(out_size),
+                      ]
+        else:
+            layers = [nn.ReflectionPad2d(padding=0),
+                      nn.Conv2d(in_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
+                                dilation=dilation),
+                      nn.LeakyReLU(),
+                      nn.ReflectionPad2d(padding=0),
+                      nn.Conv2d(out_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
+                                dilation=dilation),
+                      nn.LeakyReLU(), ]
+
+        if dropout:
+            layers.append(nn.Dropout(p=prob))
+
+        self.EncodingBlock = nn.Sequential(*layers)
+
+    def forward(self, input_data, fn=None):
+        output = self.EncodingBlock(input_data)
+        return output
 
 class UNetClassiFlood(nn.Module):
     """Main UNet architecture
@@ -314,7 +358,7 @@ class UNetClassiFlood(nn.Module):
         self.decode1 = DecodingBlockFlood(128, 64)
         self.final2DConv = nn.Conv2d(64, classes, kernel_size=1)
         self.linear = nn.Conv2d(classes, classes, kernel_size=1)
-        self.LRelu = nn.LeakyReLU(inplace=True)
+        self.LRelu = nn.LeakyReLU()
         self.output = nn.Softmax2d()
         
     def forward(self, input_data):
