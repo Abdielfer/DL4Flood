@@ -246,9 +246,9 @@ class UNetFlood(nn.Module):
         self.final = nn.Conv2d(64, classes+1, kernel_size=1)
         
         self.linearChanelReduction = nn.Conv2d(classes+1,classes, kernel_size=1)
-        self.linear = nn.Conv2d(classes,classes, kernel_size=1)
+        self.linear = nn.Conv2d(classes+1,classes+1, kernel_size=1)
         self.LRelu = nn.LeakyReLU()
-        self.output = nn.Sigmoid()
+        self.output = nn.Softmax2d()
 
     def forward(self, input_data):
         conv1 = self.conv1(input_data)
@@ -267,13 +267,13 @@ class UNetFlood(nn.Module):
         selfFinal = self.final(decode1)
         interpolation = nn.functional.interpolate(selfFinal, input_data.size()[2:], mode='bilinear', align_corners=True)
         if self.ClassifierOn:
-            linear1 = self.linearChanelReduction(interpolation)
+            linear1 = self.linear(interpolation)
             linear1Activated = self.LRelu(linear1)
             linear2 = self.linear(linear1Activated)
             linear2Activated = self.LRelu(linear2)
             linear3 = self.linear(linear2Activated)
-            finalSimoid = self.output(linear3)
-            return torch.argmax(finalSimoid, dim=-3)
+            final = self.output(linear3)
+            return   torch.argmax(final, dim=-3)
         return interpolation
 
 ####   UNet Classi Flood  ####
