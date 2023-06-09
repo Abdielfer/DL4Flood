@@ -71,11 +71,11 @@ def logger(cfg: DictConfig, nameByTime):
     You can log all you want here!
     '''
     logging.info(f"Model saved as :{nameByTime}")
-    logging.info("Model:", cfg.parameters.model)
-    logging.info("Weight Init", cfg.parameters.init_weight)
+    logging.info(f"Model: {cfg.parameters.model}")
+    logging.info(f"Weight Init: {cfg.parameters.init_weight}")
     logging.info(f"Parameters of weights initialization: {cfg.parameters['initWeightParams']}")
-    logging.info("Loss :",cfg.parameters.loss_fn)
-    logging.info("Optimizer", cfg.parameters.optimizer)        
+    logging.info(f"Loss: {cfg.parameters.loss_fn}")
+    logging.info(f"Optimizer: {cfg.parameters.optimizer}")        
 
 @hydra.main(version_base=None, config_path=f"config", config_name="configVelum.yaml")
 def main(cfg: DictConfig):
