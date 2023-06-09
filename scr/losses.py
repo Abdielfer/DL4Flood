@@ -107,7 +107,7 @@ def lovasz_hinge_flat(logits, labels):
     perm = perm.data  ## perm: are the index in the original erros tensor. Is used to sorte the ground truth in the next line
     gt_sorted = labels[perm]
     grad = lovasz_grad(gt_sorted)
-    print(f"Shecking if grad is zero: {grad}")
+    # print(f"Shecking if grad is zero: {grad}")
     loss = torch.dot(F.relu(errors_sorted), grad.requires_grad_(True))
     return loss
 
