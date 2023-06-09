@@ -13,7 +13,7 @@ modelMode: train
 # @package _global_
 ##  Model
 model:
-  _target_: model_set.models.UNetFlood
+  _target_: model_set.models.UNetClassiFlood
   classes : 1
   in_channels : 1
   dropout: True   # (bool) Use dropout or not
@@ -23,7 +23,7 @@ model:
   #  UNetFlood: (For this moldel uou can add ->> classifierOn : True)
   #  UNetClassiFlood
 negative_slope_linear : 0.0001 # To apply to LeakyRelu
-negative_slope_Encoder : 0.0001 # To apply to the encoder block. 0.01 is the default value of the function: nn.LeakyReLU() 
+negative_slope_Encoder : 0.01 # To apply to the encoder block. 0.01 is the default value of the function: nn.LeakyReLU() 
 init_weight:
   _partial_: True 
   _target_: torch.nn.init.kaiming_normal_
@@ -31,7 +31,7 @@ initWeightParams: {mode:'fan_out', nonlinearity :'leaky_relu'}
 ## Loss
 loss_fn:
   _partial_: True 
-  _target_: scr.losses.lovasz_hinge
+  _target_: torch.nn.functional.binary_cross_entropy_with_logits
   # Loss Options:
   #  torch.nn.functional.binary_cross_entropy_with_logits
   #  torch.nn.BCELoss
@@ -43,6 +43,6 @@ metric_fn :
 ## Optimizer
 optimizer:
   _target_: torch.optim.Adam
-  maximize : True
+  maximize : False
   lr: 0.001
   weight_decay : 0.5

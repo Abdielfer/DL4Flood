@@ -295,23 +295,23 @@ class EncodingBlock_LeakyRelu(nn.Module):
             layers = [nn.ReflectionPad2d(padding=0),
                       nn.Conv2d(in_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
                                 dilation=dilation),
-                      nn.ReLU(),
+                      nn.LeakyReLU(negative_slope=nSlope),
                       nn.BatchNorm2d(out_size),
                       nn.ReflectionPad2d(padding=0),
                       nn.Conv2d(out_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
                                 dilation=dilation),
-                      nn.ReLU(),
+                      nn.LeakyReLU(negative_slope=nSlope),
                       nn.BatchNorm2d(out_size),
                       ]
         else:
             layers = [nn.ReflectionPad2d(padding=0),
                       nn.Conv2d(in_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
                                 dilation=dilation),
-                      nn.ReLU(),
+                      nn.LeakyReLU(negative_slope=nSlope),
                       nn.ReflectionPad2d(padding=0),
                       nn.Conv2d(out_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
                                 dilation=dilation),
-                      nn.ReLU(),
+                      nn.LeakyReLU(negative_slope=nSlope),
                       ]
 
         if dropout:
@@ -369,10 +369,10 @@ class UNetClassiFlood(nn.Module):
         self.decode2 = DecodingBlock_LeakyRelu(256, 128)
         self.decode1 = DecodingBlock_LeakyRelu(128, 64)
         self.final2DConv = nn.Conv2d(64, classes+1, kernel_size=1)   
-        self.linearChanelReduction = nn.Conv2d(classes+1,classes+1, kernel_size=1)
         self.linear = nn.Conv2d(classes+1,classes+1, kernel_size=1)
-        self.LRelu = nn.LeakyReLU(negative_slope=cfg.parameters['negative_slope_linear']) if cfg is not None else nn.LeakyReLU()
-        self.output = nn.Softmax2d()
+        self.linearChanelReduction = nn.Conv2d(classes+1,1, kernel_size=1)
+        self.NonLinearity = nn.LeakyReLU(negative_slope=cfg.parameters['negative_slope_linear']) if cfg is not None else nn.LeakyReLU()
+        self.output = nn.Sigmoid()
         
     def forward(self, input_data):
         conv1 = self.conv1(input_data)
@@ -388,16 +388,15 @@ class UNetClassiFlood(nn.Module):
         decode3 = self.decode3(conv3, decode4)
         decode2 = self.decode2(conv2, decode3)
         decode1 = self.decode1(conv1, decode2)
-        lastConv2D = self.final2DConv(decode1)
+        lastConv2D = self.final2DConv(decode1)  
         interpolation = nn.functional.interpolate(lastConv2D, input_data.size()[2:], mode='bilinear', align_corners=True)
-        linear1 = self.linearChanelReduction(interpolation)
-        linear1Activated = self.LRelu(linear1)
+        linear1 = self.linear(interpolation)
+        linear1Activated = self.NonLinearity(linear1)
         linear2 = self.linear(linear1Activated)
-        linear2Activated = self.LRelu(linear2)
-        linear3 = self.linear(linear2Activated)
+        linear2Activated = self.NonLinearity(linear2)
+        linear3 = self.linearChanelReduction(linear2Activated)
         output = self.output(linear3)
-        finalPrediction = torch.argmax(output, dim=-3)
-        return finalPrediction
+        return output
 
 
 
