@@ -220,14 +220,13 @@ class UNetFlood(nn.Module):
     This is an "IN PROGRESS" experiment. (Marz 21st 2023) Abdiel Fernandez RNCan
     @classes: Number of classes.
     @in_channels: Number of channels in the input image. 
-    @classifierOn = whether compute linear steps with softmax or only convolution
+    @classifierOn = whether compute linear steps with Sigmoid (True) or only convolution (False)
      NOTE: If classifierOn  Return 0-1 mask insted of logits. 
     """
 
     def __init__(self, classes, in_channels, dropout:bool = True, prob:float = 0.5, classifierOn = False):
         super().__init__()
         self.ClassifierOn = classifierOn
-        self.classes = classes
         self.conv1 = EncodingBlockFlood(in_channels, 64, dropout=dropout, prob=prob)
         self.maxpool1 = nn.MaxPool2d(kernel_size=2)
         self.conv2 = EncodingBlockFlood(64, 128, dropout=dropout, prob=prob)
@@ -246,10 +245,10 @@ class UNetFlood(nn.Module):
 
         self.final = nn.Conv2d(64, classes, kernel_size=1)
         
-        self.linearChanelReduction = nn.Conv2d(classes,1, kernel_size=1)
-        self.linear = nn.Conv2d(1,1, kernel_size=1)
+        self.linearChanelReduction = nn.Conv2d(classes,classes, kernel_size=1)
+        self.linear = nn.Conv2d(classes,classes, kernel_size=1)
         self.LRelu = nn.LeakyReLU()
-        self.output = nn.Softmax2d()
+        self.output = nn.Sigmoid()
 
     def forward(self, input_data):
         conv1 = self.conv1(input_data)
@@ -273,8 +272,8 @@ class UNetFlood(nn.Module):
             linear2 = self.linear(linear1Activated)
             linear2Activated = self.LRelu(linear2)
             linear3 = self.linear(linear2Activated)
-            finalSoftMax = self.output(linear3)
-            return finalSoftMax
+            finalSimoid = self.output(linear3)
+            return torch.argmax(finalSimoid)
         return interpolation
 
 ####   UNet Classi Flood  ####
@@ -370,9 +369,9 @@ class UNetClassiFlood(nn.Module):
         self.decode3 = DecodingBlock_LeakyRelu(512, 256)
         self.decode2 = DecodingBlock_LeakyRelu(256, 128)
         self.decode1 = DecodingBlock_LeakyRelu(128, 64)
-        self.final2DConv = nn.Conv2d(64, classes, kernel_size=1)
-        self.linearChanelReduction = nn.Conv2d(classes,1, kernel_size=1)
-        self.linear = nn.Conv2d(1,1, kernel_size=1)
+        self.final2DConv = nn.Conv2d(64, classes+1, kernel_size=1)   
+        self.linearChanelReduction = nn.Conv2d(classes+1,classes+1, kernel_size=1)
+        self.linear = nn.Conv2d(classes+1,classes+1, kernel_size=1)
         self.LRelu = nn.LeakyReLU(negative_slope=cfg.parameters['negative_slope_linear']) if cfg is not None else nn.LeakyReLU()
         self.output = nn.Softmax2d()
         
@@ -397,8 +396,8 @@ class UNetClassiFlood(nn.Module):
         linear2 = self.linear(linear1Activated)
         linear2Activated = self.LRelu(linear2)
         linear3 = self.linear(linear2Activated)
-        finalSoftMax = self.output(linear3)
-        return finalSoftMax
+        finalPrediction = torch.softmax(self.output(linear3))
+        return finalPrediction
 
 
 
