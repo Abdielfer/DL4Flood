@@ -248,7 +248,7 @@ class UNetFlood(nn.Module):
         self.linearChanelReduction = nn.Conv2d(classes+1,classes, kernel_size=1)
         self.linear = nn.Conv2d(classes,classes, kernel_size=1)
         self.LRelu = nn.LeakyReLU()
-        # self.output = nn.Sigmoid()
+        self.output = nn.Sigmoid()
 
     def forward(self, input_data):
         conv1 = self.conv1(input_data)
