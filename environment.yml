@@ -1,4 +1,4 @@
-name: geo_deep_env
+name: venvFloodConda
 channels:
   - pytorch
   - conda-forge
@@ -19,7 +19,7 @@ dependencies:
   - torchgeo>=0.3
   - torchvision>=0.12
   - pip:
-    - hydra-colorlog>=1.1.0
+    # - hydra-colorlog>=1.1.0
     - hydra-optuna-sweeper>=1.1.0
     - git+https://github.com/CosmiQ/solaris.git@0.5.0
     - ttach>=0.0.3

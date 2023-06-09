@@ -122,7 +122,7 @@ class models_trainer(object):
                 metric.append(self.metric_fn(yHat, y_item))
             ItemMetric = np.mean(metric)
             miniBathcMetric.append(ItemMetric)
-        return round(np.mean(miniBathcMetric),5)
+        return round(np.mean(miniBathcMetric),7)
 
     def train(self, n_epochs, seed=42):
         self.set_seed(seed)
