@@ -29,10 +29,11 @@ initWeightParams: {mode:'fan_out', nonlinearity :'leaky_relu'}
 ## Loss
 loss_fn:
   _partial_: True 
-  _target_: scr.losses.lovasz_hinge 
+  _target_: torch.nn.functional.binary_cross_entropy_with_logits
   # Loss Options:
   #  torch.nn.functional.binary_cross_entropy_with_logits
   #  torch.nn.BCELoss
+  #  scr.losses.lovasz_hinge (Note: To be used with Optimizer/maximize : True)
 ## Metric
 metric_fn :
   _partial_: True
@@ -40,6 +41,6 @@ metric_fn :
 ## Optimizer
 optimizer:
   _target_: torch.optim.Adam
-  maximize : True
+  maximize : False
   lr: 0.001
   weight_decay : 0.5
