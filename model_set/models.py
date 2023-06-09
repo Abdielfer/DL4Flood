@@ -397,7 +397,7 @@ class UNetClassiFlood(nn.Module):
         linear2Activated = self.LRelu(linear2)
         linear3 = self.linear(linear2Activated)
         output = self.output(linear3)
-        finalPrediction = torch.softmax(output, dim=-3).squeeze()
+        finalPrediction = torch.argmax(output, dim=-3)
         return finalPrediction
 
 
