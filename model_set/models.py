@@ -271,9 +271,8 @@ class UNetFlood(nn.Module):
             linear1Activated = self.LRelu(linear1)
             linear2 = self.linear(linear1Activated)
             linear2Activated = self.LRelu(linear2)
-            linear3 = self.linear(linear2Activated)
-            final = self.output(linear3)
-            return   torch.argmax(final, dim=-3)
+            linear3 = self.linearChanelReduction(linear2Activated)
+            return self.LRelu(linear3)
         return interpolation
 
 ####   UNet Classi Flood  ####
