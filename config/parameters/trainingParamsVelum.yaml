@@ -18,7 +18,7 @@ model:
   in_channels : 1
   dropout: True   # (bool) Use dropout or not
   prob: 0.1 # float: 0. - 0.99
-  classifierOn : True
+  # classifierOn : True
   # Model options
   #  UNetFlood: (For this moldel uou can add ->> classifierOn : True)
   #  UNetClassiFlood
