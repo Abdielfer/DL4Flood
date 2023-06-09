@@ -243,12 +243,12 @@ class UNetFlood(nn.Module):
         self.decode2 = DecodingBlockFlood(256, 128)
         self.decode1 = DecodingBlockFlood(128, 64)
 
-        self.final = nn.Conv2d(64, classes, kernel_size=1)
+        self.final = nn.Conv2d(64, classes+1, kernel_size=1)
         
-        self.linearChanelReduction = nn.Conv2d(classes,classes, kernel_size=1)
+        self.linearChanelReduction = nn.Conv2d(classes+1,classes, kernel_size=1)
         self.linear = nn.Conv2d(classes,classes, kernel_size=1)
         self.LRelu = nn.LeakyReLU()
-        self.output = nn.Sigmoid()
+        # self.output = nn.Sigmoid()
 
     def forward(self, input_data):
         conv1 = self.conv1(input_data)
@@ -271,9 +271,9 @@ class UNetFlood(nn.Module):
             linear1Activated = self.LRelu(linear1)
             linear2 = self.linear(linear1Activated)
             linear2Activated = self.LRelu(linear2)
-            linear3 = self.linear(linear2Activated)
-            finalSimoid = self.output(linear3)
-            return torch.argmax(finalSimoid, dim=-3).squeeze()
+            # linear3 = self.linear(linear2Activated)
+            # finalSimoid = self.output(linear3)
+            return linear2Activated #torch.argmax(finalSimoid, dim=-3).squeeze()
         return interpolation
 
 ####   UNet Classi Flood  ####
@@ -296,23 +296,23 @@ class EncodingBlock_LeakyRelu(nn.Module):
             layers = [nn.ReflectionPad2d(padding=0),
                       nn.Conv2d(in_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
                                 dilation=dilation),
-                      nn.LeakyReLU(negative_slope=nSlope),
+                      nn.ReLU(),
                       nn.BatchNorm2d(out_size),
                       nn.ReflectionPad2d(padding=0),
                       nn.Conv2d(out_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
                                 dilation=dilation),
-                      nn.LeakyReLU(negative_slope=nSlope),
+                      nn.ReLU(),
                       nn.BatchNorm2d(out_size),
                       ]
         else:
             layers = [nn.ReflectionPad2d(padding=0),
                       nn.Conv2d(in_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
                                 dilation=dilation),
-                      nn.LeakyReLU(negative_slope=nSlope),
+                      nn.ReLU(),
                       nn.ReflectionPad2d(padding=0),
                       nn.Conv2d(out_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
                                 dilation=dilation),
-                      nn.LeakyReLU(negative_slope=nSlope),
+                      nn.ReLU(),
                       ]
 
         if dropout:
@@ -335,7 +335,7 @@ class DecodingBlock_LeakyRelu(nn.Module):
         else:
             self.up = nn.ConvTranspose2d(in_size, out_size, kernel_size=2, stride=2)
 
-        self.conv = EncodingBlock_LeakyRelu(in_size, out_size, batch_norm=batch_norm, nSlope=0.0001)
+        self.conv = EncodingBlock_LeakyRelu(in_size, out_size, batch_norm=batch_norm)
 
     def forward(self, input1, input2):
         output2 = self.up(input2)
