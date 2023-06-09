@@ -18,6 +18,8 @@ model:
   in_channels : 1
   dropout: True   # (bool) Use dropout or not
   prob: 0.1 # float: 0. - 0.99
+negative_slope_linear : 0.01 # To apply to LeakyRelu
+negative_slope_Encoder : 0.01 # To apply to the encoder block. 0.01 is the default value of the function: nn.LeakyReLU() 
 init_weight:
   _partial_: True 
   _target_: torch.nn.init.kaiming_normal_
@@ -25,7 +27,10 @@ initWeightParams: {mode:'fan_out', nonlinearity :'leaky_relu'}
 ## Loss
 loss_fn:
   _partial_: True 
-  _target_: scr.losses.lovasz_hinge #  torch.nn.functional.binary_cross_entropy_with_logits 
+  _target_: scr.losses.lovasz_hinge 
+  # Loss Options:
+  #  torch.nn.functional.binary_cross_entropy_with_logits
+  #  torch.nn.BCELoss
 ## Metric
 metric_fn :
   _partial_: True

@@ -2,6 +2,8 @@ import torch
 import scr.util as utils
 from torch import nn
 from torch import sigmoid
+from omegaconf import DictConfig
+
 
 ##### Original Unet ______  ####
 class EncodingBlock(nn.Module):
@@ -286,7 +288,8 @@ class EncodingBlock_LeakyRelu(nn.Module):
      Since we do not have enough knowledge regarding flood modeling from DEM with CNN, we intend to       prevent the loss of some weights (zero values) in the convolution process.  
     
     '''
-    def __init__(self, in_size, out_size, kernel_size=3, padding=0, stride=1, dilation=1, batch_norm=True, dropout=False, prob=0.5):
+    def __init__(self, in_size, out_size, kernel_size=3, padding=0, stride=1, dilation=1, 
+                 batch_norm=True, dropout=False, prob=0.5, nSlope = 0.01):
         super().__init__()
 
         if batch_norm:
@@ -294,23 +297,22 @@ class EncodingBlock_LeakyRelu(nn.Module):
             layers = [nn.ReflectionPad2d(padding=0),
                       nn.Conv2d(in_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
                                 dilation=dilation),
-                      nn.LeakyReLU(),
+                      nn.LeakyReLU(negative_slope=nSlope),
                       nn.BatchNorm2d(out_size),
                       nn.ReflectionPad2d(padding=0),
                       nn.Conv2d(out_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
                                 dilation=dilation),
-                      nn.LeakyReLU(),
-                      nn.BatchNorm2d(out_size),
-                      ]
+                      nn.LeakyReLU(negative_slope=nSlope),
+                      nn.BatchNorm2d(out_size)]
         else:
             layers = [nn.ReflectionPad2d(padding=0),
                       nn.Conv2d(in_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
                                 dilation=dilation),
-                      nn.LeakyReLU(),
+                      nn.LeakyReLU(negative_slope=nSlope),
                       nn.ReflectionPad2d(padding=0),
                       nn.Conv2d(out_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
                                 dilation=dilation),
-                      nn.LeakyReLU(), ]
+                      nn.LeakyReLU(negative_slope=nSlope)]
 
         if dropout:
             layers.append(nn.Dropout(p=prob))
@@ -332,7 +334,7 @@ class DecodingBlock_LeakyRelu(nn.Module):
         else:
             self.up = nn.ConvTranspose2d(in_size, out_size, kernel_size=2, stride=2)
 
-        self.conv = EncodingBlock_LeakyRelu(in_size, out_size, batch_norm=batch_norm)
+        self.conv = EncodingBlock_LeakyRelu(in_size, out_size, batch_norm=batch_norm, nSlope=0.0001)
 
     def forward(self, input1, input2):
         output2 = self.up(input2)
@@ -340,26 +342,28 @@ class DecodingBlock_LeakyRelu(nn.Module):
         return self.conv(torch.cat([output1, output2], 1))
 
 class UNetClassiFlood(nn.Module):
-    """Main UNet architecture
-    - This vertion is adapted to small input images, considering higher resolution DTM inputs. 
+    """Main UNet architecture This is an "in progress" experiment. (Marz 21st 2023)
     NOTE: Flood context in genereal is well described by a short distance from the river ( max 1000m).
-    This is an "in progress" experiment. (Marz 21st 2023)
+    - This vertion is adapted to small input images, considering higher resolution DTM inputs. 
+    - To avoid dead weights we change Relu by LeakyRelu and we play with negative slope value of LeakyRelu.    
+    
     @classes: Number of classes.
     @in_channels: Number of channels in the input image. 
     """
 
-    def __init__(self, classes, in_channels, dropout:bool = True, prob:float = 0.5):
+    def __init__(self, classes, in_channels, dropout:bool = True, prob:float = 0.5,cfg:DictConfig = None):
         super().__init__()
+        NSlopeEncoder = cfg.parameters['negative_slope_Encoder'] if cfg is not None else 0.01
         self.classes = classes
         self.conv1 = EncodingBlock_LeakyRelu(in_channels, 64, dropout=dropout, prob=prob)
         self.maxpool1 = nn.MaxPool2d(kernel_size=2)
-        self.conv2 = EncodingBlock_LeakyRelu(64, 128, dropout=dropout, prob=prob)
+        self.conv2 = EncodingBlock_LeakyRelu(64, 128, dropout=dropout, prob=prob, nSlope=NSlopeEncoder)
         self.maxpool2 = nn.MaxPool2d(kernel_size=2)
-        self.conv3 = EncodingBlock_LeakyRelu(128, 256, dropout=dropout, prob=prob)
+        self.conv3 = EncodingBlock_LeakyRelu(128, 256, dropout=dropout, prob=prob, nSlope=NSlopeEncoder)
         self.maxpool3 = nn.MaxPool2d(kernel_size=2)
-        self.conv4 = EncodingBlock_LeakyRelu(256, 512, dropout=dropout, prob=prob)
+        self.conv4 = EncodingBlock_LeakyRelu(256, 512, dropout=dropout, prob=prob, nSlope=NSlopeEncoder)
         self.maxpool4 = nn.MaxPool2d(kernel_size=2)
-        self.center = EncodingBlock_LeakyRelu(512, 1024, dropout=dropout, prob=prob)
+        self.center = EncodingBlock_LeakyRelu(512, 1024, dropout=dropout, prob=prob, nSlope=NSlopeEncoder)
         self.decode4 = DecodingBlock_LeakyRelu(1024, 512)
         self.decode3 = DecodingBlock_LeakyRelu(512, 256)
         self.decode2 = DecodingBlock_LeakyRelu(256, 128)
@@ -367,7 +371,7 @@ class UNetClassiFlood(nn.Module):
         self.final2DConv = nn.Conv2d(64, classes, kernel_size=1)
         self.linearChanelReduction = nn.Conv2d(classes,1, kernel_size=1)
         self.linear = nn.Conv2d(1,1, kernel_size=1)
-        self.LRelu = nn.LeakyReLU()
+        self.LRelu = nn.LeakyReLU(negative_slope=cfg.parameters['negative_slope_linear']) if cfg is not None else nn.LeakyReLU()
         self.output = nn.Softmax2d()
         
     def forward(self, input_data):
