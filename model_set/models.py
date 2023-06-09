@@ -273,7 +273,7 @@ class UNetFlood(nn.Module):
             linear2Activated = self.LRelu(linear2)
             linear3 = self.linear(linear2Activated)
             finalSimoid = self.output(linear3)
-            return torch.argmax(finalSimoid, dim=-3)
+            return torch.argmax(finalSimoid, dim=-3).unsqueeze()
         return interpolation
 
 ####   UNet Classi Flood  ####
@@ -396,7 +396,8 @@ class UNetClassiFlood(nn.Module):
         linear2 = self.linear(linear1Activated)
         linear2Activated = self.LRelu(linear2)
         linear3 = self.linear(linear2Activated)
-        finalPrediction = torch.softmax(self.output(linear3), dim=-3)
+        output = self.output(linear3)
+        finalPrediction = torch.softmax(output, dim=-3).unsqueeze()
         return finalPrediction
 
 
