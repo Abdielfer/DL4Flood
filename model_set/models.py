@@ -303,7 +303,8 @@ class EncodingBlock_LeakyRelu(nn.Module):
                       nn.Conv2d(out_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
                                 dilation=dilation),
                       nn.LeakyReLU(negative_slope=nSlope),
-                      nn.BatchNorm2d(out_size)]
+                      nn.BatchNorm2d(out_size),
+                      ]
         else:
             layers = [nn.ReflectionPad2d(padding=0),
                       nn.Conv2d(in_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
@@ -312,7 +313,8 @@ class EncodingBlock_LeakyRelu(nn.Module):
                       nn.ReflectionPad2d(padding=0),
                       nn.Conv2d(out_size, out_size, kernel_size=kernel_size, padding=padding, stride=stride,
                                 dilation=dilation),
-                      nn.LeakyReLU(negative_slope=nSlope)]
+                      nn.LeakyReLU(negative_slope=nSlope),
+                      ]
 
         if dropout:
             layers.append(nn.Dropout(p=prob))
