@@ -243,10 +243,10 @@ class UNetFlood(nn.Module):
         self.decode2 = DecodingBlockFlood(256, 128)
         self.decode1 = DecodingBlockFlood(128, 64)
 
-        self.final = nn.Conv2d(64, classes+1, kernel_size=1)
+        self.final = nn.Conv2d(64, classes, kernel_size=1)
         
-        self.linearChanelReduction = nn.Conv2d(classes+1,classes, kernel_size=1)
-        self.linear = nn.Conv2d(classes+1,classes+1, kernel_size=1)
+        self.linearChanelReduction = nn.Conv2d(classes,1, kernel_size=1)
+        self.linear = nn.Conv2d(classes,classes, kernel_size=1)
         self.LRelu = nn.LeakyReLU()
         self.output = nn.Softmax2d()
 
