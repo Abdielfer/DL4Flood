@@ -18,6 +18,7 @@ model:
   in_channels : 1
   dropout: True   # (bool) Use dropout or not
   prob: 0.1  # float: 0. - 0.99
+  addParams : {patch_W: 384,patch_W: 384, negative_slope_linear: 0.0001, negative_slope_Encoder : 0.01}
 init_weight:
   _partial_: True 
   _target_: torch.nn.init.kaiming_normal_

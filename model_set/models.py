@@ -351,9 +351,9 @@ class UNetClassiFlood(nn.Module):
     @in_channels: Number of channels in the input image. 
     """
 
-    def __init__(self, classes, in_channels, dropout:bool = True, prob:float = 0.5,cfg:DictConfig = None):
+    def __init__(self, classes, in_channels, dropout:bool = True, prob:float = 0.5,addParams:dict = None):
         super().__init__()
-        NSlopeEncoder = cfg.parameters['negative_slope_Encoder'] if cfg is not None else 0.01
+        NSlopeEncoder = addParams['negative_slope_Encoder'] if addParams is not None else 0.01
         self.classes = classes
         self.conv1 = EncodingBlock_LeakyRelu(in_channels, 64, dropout=dropout, prob=prob)
         self.maxpool1 = nn.MaxPool2d(kernel_size=2)
@@ -371,7 +371,7 @@ class UNetClassiFlood(nn.Module):
         self.final2DConv = nn.Conv2d(64, classes+1, kernel_size=1)   
         self.linear = nn.Conv2d(classes+1,classes+1, kernel_size=1)
         self.linearChanelReduction = nn.Conv2d(classes+1,1, kernel_size=1)
-        self.NonLinearity = nn.LeakyReLU(negative_slope=cfg.parameters['negative_slope_linear']) if cfg is not None else nn.LeakyReLU()
+        self.NonLinearity = nn.LeakyReLU(negative_slope=addParams['negative_slope_linear']) if addParams is not None else nn.LeakyReLU()
         self.output = nn.Sigmoid()
         
     def forward(self, input_data):
