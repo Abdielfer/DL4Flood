@@ -18,12 +18,13 @@ model:
   in_channels : 1
   dropout: True   # (bool) Use dropout or not
   prob: 0.1 # float: 0. - 0.99
+  addParams : {patch_W: 384,patch_H: 384, negative_slope_linear: 0.0001, negative_slope_Encoder : 0.01}
   # classifierOn : True
   # Model options
   #  UNetFlood: (For this moldel uou can add ->> classifierOn : True)
   #  UNetClassiFlood
-negative_slope_linear : 0.0001 # To apply to LeakyRelu
-negative_slope_Encoder : 0.01 # To apply to the encoder block. 0.01 is the default value of the function: nn.LeakyReLU() 
+# negative_slope_linear : 0.0001 # To apply to LeakyRelu
+# negative_slope_Encoder : 0.01 # To apply to the encoder block. 0.01 is the default value of the function: nn.LeakyReLU() 
 init_weight:
   _partial_: True 
   _target_: torch.nn.init.kaiming_normal_
