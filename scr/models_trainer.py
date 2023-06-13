@@ -117,7 +117,7 @@ class models_trainer(object):
         for x_batch, y_batch in data_loader:
             metric=[]
             for x,y in zip(x_batch, y_batch):
-                yHat = self.predict(x)
+                yHat = self.predict2(x)
                 y_item= y.detach().cpu().numpy() if torch.is_tensor(y) else y.squeeze().detach().cpu()
                 metric.append(self.metric_fn(yHat, y_item))
             ItemMetric = np.mean(metric)
@@ -182,6 +182,15 @@ class models_trainer(object):
         mask = torch.round(torch.sigmoid(y_hat_tensor)).to(torch.int32)
         return mask.detach().cpu().numpy()
 
+    def predict2(self, x)-> np.array:
+            '''
+            @Return: A 0-1 mask as np.array. 
+            '''
+            y_hat_tensor = self.model(torch.unsqueeze(x,0).to(self.device))
+            # Detaches it, brings it to CPU and back to Numpy
+            mask = torch.round(y_hat_tensor).detach().cpu().numpy()
+            return mask
+    
     def plot_losses(self):
         print("I'm into plot Losess function")
         fig = plt.figure(figsize=(10, 4))

@@ -77,7 +77,7 @@ def logger(cfg: DictConfig, nameByTime):
     logging.info(f"Loss: {cfg.parameters.loss_fn}")
     logging.info(f"Optimizer: {cfg.parameters.optimizer}")        
 
-@hydra.main(version_base=None, config_path=f"config", config_name="configVelum.yaml")
+@hydra.main(version_base=None, config_path=f"config", config_name="configPC.yaml")
 def main(cfg: DictConfig):
     nameByTime = U.makeNameByTime()
     # ## Spliting Trn-Val

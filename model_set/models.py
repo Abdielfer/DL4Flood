@@ -373,7 +373,7 @@ class UNetClassiFlood(nn.Module):
         self.decode1 = DecodingBlock_LeakyRelu(128, 64)
         self.final2DConv = nn.Conv2d(64, classes, kernel_size=1)   
         self.linear = nn.Linear(flattendDim, flattendDim)
-        self.linearChanelReduction = nn.Conv2d(classes+1,1, kernel_size=1)
+        self.linearChanelReduction = nn.Conv2d(classes,1, kernel_size=1)
         self.NonLinearity = nn.LeakyReLU(negative_slope=addParams['negative_slope_linear']) if addParams is not None else nn.LeakyReLU()
         self.output = nn.Sigmoid()
         
