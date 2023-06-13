@@ -18,7 +18,7 @@ model:
   in_channels : 1
   dropout: True   # (bool) Use dropout or not
   prob: 0.1  # float: 0. - 0.99
-  addParams : {patch_W: 384,patch_H: 384, negative_slope_linear: 0.0001, negative_slope_Encoder : 0.01}  # Only for UnetClassiFlood
+  addParams : {patch_W: 384,patch_H: 384, negative_slope_linear: 0.01, negative_slope_Encoder : 0.01}  # Only for UnetClassiFlood
   #classifierOn : False    # Only for UnetFlood
 init_weight:
   _partial_: True 
@@ -36,5 +36,5 @@ metric_fn :
 optimizer:
   _target_: torch.optim.Adam
   maximize : False
-  lr: 0.001
-  weight_decay : 0.5
+  lr: 0.01
+  weight_decay : 0.9

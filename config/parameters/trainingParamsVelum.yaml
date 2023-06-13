@@ -2,7 +2,7 @@
 ### ~\config\parameters\configTraining.yaml
 targetColName: percentage
 epochs : 150
-dataLoaderArgs :  {'batch_size': 1, 'num_workers': 4,'drop_last': True}
+dataLoaderArgs :  {'batch_size': 10, 'num_workers': 4,'drop_last': True}
 normalize : False
 scheduler: plateau
 makeTest: True
@@ -32,7 +32,7 @@ initWeightParams: {mode:'fan_out', nonlinearity :'leaky_relu'}
 ## Loss
 loss_fn:
   _partial_: True 
-  _target_: torch.nn.functional.binary_cross_entropy_with_logits
+  _target_: scr.losses.lovasz_hinge
   # Loss Options:
   #  torch.nn.functional.binary_cross_entropy_with_logits
   #  torch.nn.BCELoss
@@ -44,6 +44,6 @@ metric_fn :
 ## Optimizer
 optimizer:
   _target_: torch.optim.Adam
-  maximize : False
-  lr: 0.001
-  weight_decay : 0.5
+  maximize : True
+  lr: 0.01
+  weight_decay : 0.9

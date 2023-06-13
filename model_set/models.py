@@ -399,8 +399,7 @@ class UNetClassiFlood(nn.Module):
         linear1Activated = self.NonLinearity(linear1)
         maxpool_1D = self.maxpool_1D(linear1Activated)
         linear2 = self.linear1D(maxpool_1D)
-        linear2Activated = self.NonLinearity(linear2)
-        output = self.output(linear2Activated).view(input_data.shape)
+        output = self.output(linear2.view(input_data.shape))
         return output
 
 
