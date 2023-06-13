@@ -354,6 +354,9 @@ class UNetClassiFlood(nn.Module):
     def __init__(self, classes, in_channels, dropout:bool = True, prob:float = 0.5,addParams:dict = None):
         super().__init__()
         NSlopeEncoder = addParams['negative_slope_Encoder'] if addParams is not None else 0.01
+        flattendDim = addParams['patch_W']*addParams['patch_H']
+        # self.Patch_W = addParams['patch_W']
+        # self.Patch_W = addParams['patch_H']
         self.classes = classes
         self.conv1 = EncodingBlock_LeakyRelu(in_channels, 64, dropout=dropout, prob=prob)
         self.maxpool1 = nn.MaxPool2d(kernel_size=2)
@@ -368,8 +371,8 @@ class UNetClassiFlood(nn.Module):
         self.decode3 = DecodingBlock_LeakyRelu(512, 256)
         self.decode2 = DecodingBlock_LeakyRelu(256, 128)
         self.decode1 = DecodingBlock_LeakyRelu(128, 64)
-        self.final2DConv = nn.Conv2d(64, classes+1, kernel_size=1)   
-        self.linear = nn.Conv2d(classes+1,classes+1, kernel_size=1)
+        self.final2DConv = nn.Conv2d(64, classes, kernel_size=1)   
+        self.linear = nn.Linear(flattendDim, flattendDim)
         self.linearChanelReduction = nn.Conv2d(classes+1,1, kernel_size=1)
         self.NonLinearity = nn.LeakyReLU(negative_slope=addParams['negative_slope_linear']) if addParams is not None else nn.LeakyReLU()
         self.output = nn.Sigmoid()
@@ -390,12 +393,10 @@ class UNetClassiFlood(nn.Module):
         decode1 = self.decode1(conv1, decode2)
         lastConv2D = self.final2DConv(decode1)  
         interpolation = nn.functional.interpolate(lastConv2D, input_data.size()[2:], mode='bilinear', align_corners=True)
-        linear1 = self.linear(interpolation)
+        linear1 = self.linear(interpolation.flatten(2))
         linear1Activated = self.NonLinearity(linear1)
         linear2 = self.linear(linear1Activated)
-        linear2Activated = self.NonLinearity(linear2)
-        linear3 = self.linearChanelReduction(linear2Activated)
-        output = self.output(linear3)
+        output = self.output(linear2).view(input_data.shape)
         return output
 
 

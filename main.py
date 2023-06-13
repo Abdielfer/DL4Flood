@@ -53,7 +53,6 @@ class excecuteTraining():
         self.test_DLoader = D.customDataloader(self.testDataSet,args)  
         model = OmegaConf.create(cfg.parameters['model'])
         self.model = instantiate(model)
-        print(self.model)
         self.loss_fn = instantiate(cfg.parameters['loss_fn'])
         criterion = OmegaConf.create(cfg.parameters['optimizer'])
         self.optimizer = instantiate(criterion, params=self.model.parameters())
