@@ -183,13 +183,13 @@ class models_trainer(object):
         return mask.detach().cpu().numpy()
 
     def predict2(self, x)-> np.array:
-            '''
-            @Return: A 0-1 mask as np.array. 
-            '''
-            y_hat_tensor = self.model(torch.unsqueeze(x,0).to(self.device))
-            # Detaches it, brings it to CPU and back to Numpy
-            mask = torch.round(y_hat_tensor).detach().cpu().numpy()
-            return mask
+        '''
+        @Return: A 0-1 mask as np.array. 
+        '''
+        y_hat_tensor = self.model(torch.unsqueeze(x,0).to(self.device))
+        # Detaches it, brings it to CPU and back to Numpy
+        mask = torch.round(y_hat_tensor).detach().cpu().numpy()
+        return mask
     
     def plot_losses(self):
         print("I'm into plot Losess function")
@@ -236,7 +236,7 @@ class models_trainer(object):
         Change the type of <p> in <if type(p) == torch.nn.Conv2d:> for a different behavior. 
         '''
         for p in model.parameters():
-            if type(p) == torch.nn.Conv2d:
+            if type(p) == (torch.nn.Conv2d or torch.nn.Conv1d) :
                 init_func(p, *params, **kwargs)
     
     def call_logs(self, n_epochs):

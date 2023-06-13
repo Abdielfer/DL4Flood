@@ -242,13 +242,11 @@ class UNetFlood(nn.Module):
         self.decode3 = DecodingBlockFlood(512, 256)
         self.decode2 = DecodingBlockFlood(256, 128)
         self.decode1 = DecodingBlockFlood(128, 64)
-
         self.final = nn.Conv2d(64, classes, kernel_size=1)
-        
         self.linearChanelReduction = nn.Conv2d(classes,1, kernel_size=1)
         self.linear = nn.Conv2d(classes,classes, kernel_size=1)
-        self.LRelu = nn.LeakyReLU()
-        self.output = nn.Softmax2d()
+        self.LRelu = nn.ReLU()
+        self.output = nn.Sigmoid()
 
     def forward(self, input_data):
         conv1 = self.conv1(input_data)
@@ -266,14 +264,17 @@ class UNetFlood(nn.Module):
         decode1 = self.decode1(conv1, decode2)
         selfFinal = self.final(decode1)
         interpolation = nn.functional.interpolate(selfFinal, input_data.size()[2:], mode='bilinear', align_corners=True)
-        if self.ClassifierOn:
-            linear1 = self.linear(interpolation)
-            linear1Activated = self.LRelu(linear1)
-            linear2 = self.linear(linear1Activated)
-            linear2Activated = self.LRelu(linear2)
-            linear3 = self.linearChanelReduction(linear2Activated)
-            return self.LRelu(linear3)
-        return interpolation
+        linear1 = self.linear(interpolation)
+        output = self.output(linear1)
+        # if self.ClassifierOn:
+            
+        #     linear1Activated = self.LRelu(linear1)
+        #     linear2 = self.linear(linear1Activated)
+        #     linear2Activated = self.LRelu(linear2)
+        #     linear3 = self.linearChanelReduction(linear2Activated)
+        #     return self.LRelu(linear3)
+        
+        return output
 
 ####   UNet Classi Flood  ####
 
@@ -372,8 +373,9 @@ class UNetClassiFlood(nn.Module):
         self.decode2 = DecodingBlock_LeakyRelu(256, 128)
         self.decode1 = DecodingBlock_LeakyRelu(128, 64)
         self.final2DConv = nn.Conv2d(64, classes, kernel_size=1)   
-        self.linear = nn.Linear(flattendDim, flattendDim)
-        self.linearChanelReduction = nn.Conv2d(classes,1, kernel_size=1)
+        self.linear1D = nn.Conv1d(1,1,kernel_size=1)
+        self.linear1DChanelReduction = nn.Conv1d(classes,1, kernel_size=1)
+        self.maxpool_1D = nn.MaxPool1d(kernel_size=1)
         self.NonLinearity = nn.LeakyReLU(negative_slope=addParams['negative_slope_linear']) if addParams is not None else nn.LeakyReLU()
         self.output = nn.Sigmoid()
         
@@ -393,10 +395,12 @@ class UNetClassiFlood(nn.Module):
         decode1 = self.decode1(conv1, decode2)
         lastConv2D = self.final2DConv(decode1)  
         interpolation = nn.functional.interpolate(lastConv2D, input_data.size()[2:], mode='bilinear', align_corners=True)
-        linear1 = self.linear(interpolation.flatten(2))
+        linear1 = self.linear1DChanelReduction(interpolation.flatten(2))
         linear1Activated = self.NonLinearity(linear1)
-        linear2 = self.linear(linear1Activated)
-        output = self.output(linear2).view(input_data.shape)
+        maxpool_1D = self.maxpool_1D(linear1Activated)
+        linear2 = self.linear1D(maxpool_1D)
+        linear2Activated = self.NonLinearity(linear2)
+        output = self.output(linear2Activated).view(input_data.shape)
         return output
 
 
