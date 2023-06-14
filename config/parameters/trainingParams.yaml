@@ -9,7 +9,6 @@ makeTest: True
 hydra: default
 override hydra/hydra_logging: colorlog # enable color logging to make it pretty
 override hydra/job_logging: colorlog # enable color logging to make it pretty
-modelMode: train
 # @package _global_
 ##  Model
 model:
@@ -36,5 +35,5 @@ metric_fn :
 optimizer:
   _target_: torch.optim.Adam
   maximize : False
-  lr: 0.5
-  weight_decay : 0.5
+  lr: 0.1
+  weight_decay : 0.1
