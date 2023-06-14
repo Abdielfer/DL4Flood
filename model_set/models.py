@@ -2,6 +2,7 @@ import torch
 import scr.util as utils
 from torch import nn
 from torch import sigmoid
+import torch.nn.functional as F
 from omegaconf import DictConfig
 
 
@@ -354,30 +355,30 @@ class UNetClassiFlood(nn.Module):
 
     def __init__(self, classes, in_channels, dropout:bool = True, prob:float = 0.5,addParams:dict = None):
         super().__init__()
-        NSlopeEncoder = addParams['negative_slope_Encoder'] if addParams is not None else 0.01
-        flattendDim = addParams['patch_W']*addParams['patch_H']
+        self.addPrams = addParams
+        self.NSlopeEncoder = addParams['negative_slope_Encoder'] 
+        self.NSlopeLinear = addParams['negative_slope_linear']
         # self.Patch_W = addParams['patch_W']
         # self.Patch_W = addParams['patch_H']
         self.classes = classes
         self.conv1 = EncodingBlock_LeakyRelu(in_channels, 64, dropout=dropout, prob=prob)
         self.maxpool1 = nn.MaxPool2d(kernel_size=2)
-        self.conv2 = EncodingBlock_LeakyRelu(64, 128, dropout=dropout, prob=prob, nSlope=NSlopeEncoder)
+        self.conv2 = EncodingBlock_LeakyRelu(64, 128, dropout=dropout, prob=prob, nSlope=self.NSlopeEncoder)
         self.maxpool2 = nn.MaxPool2d(kernel_size=2)
-        self.conv3 = EncodingBlock_LeakyRelu(128, 256, dropout=dropout, prob=prob, nSlope=NSlopeEncoder)
+        self.conv3 = EncodingBlock_LeakyRelu(128, 256, dropout=dropout, prob=prob, nSlope=self.NSlopeEncoder)
         self.maxpool3 = nn.MaxPool2d(kernel_size=2)
-        self.conv4 = EncodingBlock_LeakyRelu(256, 512, dropout=dropout, prob=prob, nSlope=NSlopeEncoder)
+        self.conv4 = EncodingBlock_LeakyRelu(256, 512, dropout=dropout, prob=prob, nSlope=self.NSlopeEncoder)
         self.maxpool4 = nn.MaxPool2d(kernel_size=2)
-        self.center = EncodingBlock_LeakyRelu(512, 1024, dropout=dropout, prob=prob, nSlope=NSlopeEncoder)
+        self.center = EncodingBlock_LeakyRelu(512, 1024, dropout=dropout, prob=prob, nSlope=self.NSlopeEncoder)
         self.decode4 = DecodingBlock_LeakyRelu(1024, 512)
         self.decode3 = DecodingBlock_LeakyRelu(512, 256)
         self.decode2 = DecodingBlock_LeakyRelu(256, 128)
         self.decode1 = DecodingBlock_LeakyRelu(128, 64)
         self.final2DConv = nn.Conv2d(64, classes, kernel_size=1)   
         self.linear1D = nn.Conv1d(1,1,kernel_size=1)
-        self.linear1DChanelReduction = nn.Conv1d(classes,1, kernel_size=1)
+        # self.linear1DChanelReduction = nn.Conv1d(classes,1, kernel_size=1)
         self.maxpool_1D = nn.MaxPool1d(kernel_size=1)
-        self.NonLinearity = nn.LeakyReLU(negative_slope=addParams['negative_slope_linear']) if addParams is not None else nn.LeakyReLU()
-        self.output = nn.Sigmoid()
+        # self.output = nn.Sigmoid()
         
     def forward(self, input_data):
         conv1 = self.conv1(input_data)
@@ -395,12 +396,12 @@ class UNetClassiFlood(nn.Module):
         decode1 = self.decode1(conv1, decode2)
         lastConv2D = self.final2DConv(decode1)  
         interpolation = nn.functional.interpolate(lastConv2D, input_data.size()[2:], mode='bilinear', align_corners=True)
-        linear1 = self.linear1DChanelReduction(interpolation.flatten(2))
-        linear1Activated = self.NonLinearity(linear1)
+        linear1Activated = F.leaky_relu(self.linear1D(interpolation.flatten(2)),negative_slope=self.NSlopeLinear)
         maxpool_1D = self.maxpool_1D(linear1Activated)
-        linear2 = self.linear1D(maxpool_1D)
-        output = self.output(linear2.view(input_data.shape))
-        return output
+        linear2Activated = F.leaky_relu(self.linear1D(maxpool_1D,negative_slope=self.NSlopeLinear))       
+        # linear2 = self.linear1D(maxpool_1D)
+        # output = self.output(linear2.view(input_data.shape))
+        return linear2Activated.view(input_data.shape)
 
 
 

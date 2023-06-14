@@ -1,8 +1,8 @@
 
 ### ~\config\parameters\configTraining.yaml
 targetColName: percentage
-epochs : 20
-dataLoaderArgs :  {'batch_size': 1, 'num_workers': 4,'drop_last': True}
+epochs : 10
+dataLoaderArgs :  {'batch_size': 10, 'num_workers': 4,'drop_last': True}
 normalize : False
 scheduler: plateau
 makeTest: True
@@ -36,5 +36,5 @@ metric_fn :
 optimizer:
   _target_: torch.optim.Adam
   maximize : False
-  lr: 0.3
-  weight_decay : 0.9
+  lr: 0.5
+  weight_decay : 0.5

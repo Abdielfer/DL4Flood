@@ -49,7 +49,6 @@ def iou_binary(preds, labels, EMPTY=0., ignore=None, per_image=False):
             iou = float(intersection) / float(union)
         ious.append(iou)
     iou = mean(ious)    # mean accross images if per_image
-    gradLogger.info(f"iou_binary: {iou}")
     return 100 * iou
 
 
