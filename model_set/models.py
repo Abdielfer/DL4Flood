@@ -378,6 +378,7 @@ class UNetClassiFlood(nn.Module):
         self.linear1D = nn.Conv1d(1,1,kernel_size=1)
         # self.linear1DChanelReduction = nn.Conv1d(classes,1, kernel_size=1)
         self.maxpool_1D = nn.MaxPool1d(kernel_size=1)
+        # self.leakyRelu = nn.LeakyReLU(negative_slope=self.NSlopeLinear)
         # self.output = nn.Sigmoid()
         
     def forward(self, input_data):
