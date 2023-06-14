@@ -29,7 +29,7 @@ def lovasz_grad(gt_sorted):
     jaccard = 1. - intersection / union
     if p > 1: # cover 1-pixel case
         jaccard[1:p] = jaccard[1:p] - jaccard[0:-1]
-    gradLogger.info(f"Gradien lovas_grad: {jaccard}")
+    # gradLogger.info(f"Gradien lovas_grad: {jaccard}")
     return jaccard
 
 def iou_binary(preds, labels, EMPTY=0., ignore=None, per_image=False):
@@ -90,7 +90,7 @@ def lovasz_hinge(logits, labels, per_image=False, ignore=None):
                           for log, lab in zip(logits, labels))
     else:
         loss = lovasz_hinge_flat(*flatten_binary_scores(logits, labels, ignore))
-    gradLogger.info(f"lovas_hinge: {loss}")
+    # gradLogger.info(f"lovas_hinge: {loss}")
     return loss
 
 
@@ -112,7 +112,7 @@ def lovasz_hinge_flat(logits, labels):
     grad = lovasz_grad(gt_sorted)
     # print(f"Shecking if grad is zero: {grad}")
     loss = torch.dot(F.relu(errors_sorted), grad.requires_grad_(True))
-    gradLogger.info(f"lovas_hinge: {loss}")
+    # gradLogger.info(f"lovas_hinge: {loss}")
     return loss
 
 
