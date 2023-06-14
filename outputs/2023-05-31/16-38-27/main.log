@@ -1,5 +1,0 @@
-[2023-05-31 16:38:27,042][root][INFO] - Model saved as :2305311638
-[2023-05-31 16:38:27,042][root][INFO] - {'_target_': 'model_set.models.UNetFlood', 'classes': 1, 'in_channels': 1, 'dropout': True, 'prob': 0.1}
-[2023-05-31 16:38:27,042][root][INFO] - {'_partial_': True, '_target_': 'torch.nn.init.kaiming_normal_'}
-[2023-05-31 16:38:27,042][root][INFO] - {'_partial_': True, '_target_': 'torch.nn.functional.binary_cross_entropy_with_logits'}
-[2023-05-31 16:38:27,042][root][INFO] - {'_target_': 'torch.optim.Adam', 'maximize': False, 'lr': 1e-06, 'weight_decay': 0.9}

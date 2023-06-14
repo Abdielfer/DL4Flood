@@ -56,7 +56,7 @@ class models_trainer(object):
             self.optimizer.step()
             self.optimizer.zero_grad()
             item  = loss.item()
-           # print(f"Training loss {item}")
+            # print(f"Training loss {item}")
             return item
         return perform_train_step_fn
     

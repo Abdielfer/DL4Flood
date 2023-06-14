@@ -14,7 +14,8 @@ try:
     from itertools import  ifilterfalse
 except ImportError: # py3k
     from itertools import  filterfalse as ifilterfalse
-
+import logging
+gradLogger = logging.getLogger(__name__)
 
 def lovasz_grad(gt_sorted):
     """
@@ -28,6 +29,7 @@ def lovasz_grad(gt_sorted):
     jaccard = 1. - intersection / union
     if p > 1: # cover 1-pixel case
         jaccard[1:p] = jaccard[1:p] - jaccard[0:-1]
+    gradLogger.info(f"Gradien lovas_grad: {jaccard}")
     return jaccard
 
 def iou_binary(preds, labels, EMPTY=0., ignore=None, per_image=False):
@@ -47,6 +49,7 @@ def iou_binary(preds, labels, EMPTY=0., ignore=None, per_image=False):
             iou = float(intersection) / float(union)
         ious.append(iou)
     iou = mean(ious)    # mean accross images if per_image
+    gradLogger.info(f"iou_binary: {iou}")
     return 100 * iou
 
 
@@ -88,6 +91,7 @@ def lovasz_hinge(logits, labels, per_image=False, ignore=None):
                           for log, lab in zip(logits, labels))
     else:
         loss = lovasz_hinge_flat(*flatten_binary_scores(logits, labels, ignore))
+    gradLogger.info(f"lovas_hinge: {loss}")
     return loss
 
 
@@ -109,6 +113,7 @@ def lovasz_hinge_flat(logits, labels):
     grad = lovasz_grad(gt_sorted)
     # print(f"Shecking if grad is zero: {grad}")
     loss = torch.dot(F.relu(errors_sorted), grad.requires_grad_(True))
+    gradLogger.info(f"lovas_hinge: {loss}")
     return loss
 
 
