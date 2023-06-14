@@ -399,7 +399,7 @@ class UNetClassiFlood(nn.Module):
         interpolation = nn.functional.interpolate(lastConv2D, input_data.size()[2:], mode='bilinear', align_corners=True)
         linear1Activated = F.leaky_relu(self.linear1D(interpolation.flatten(2)),negative_slope=self.NSlopeLinear)
         maxpool_1D = self.maxpool_1D(linear1Activated)
-        linear2Activated = F.leaky_relu(self.linear1D(maxpool_1D,negative_slope=self.NSlopeLinear))       
+        linear2Activated = F.leaky_relu(self.linear1D(maxpool_1D),negative_slope=self.NSlopeLinear)       
         # linear2 = self.linear1D(maxpool_1D)
         # output = self.output(linear2.view(input_data.shape))
         return linear2Activated.view(input_data.shape)
