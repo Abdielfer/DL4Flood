@@ -1,8 +1,8 @@
 
 ### ~\config\parameters\configTraining.yaml
 targetColName: percentage
-epochs : 150
-dataLoaderArgs :  {'batch_size': 10, 'num_workers': 4,'drop_last': True}
+epochs : 20
+dataLoaderArgs :  {'batch_size': 1, 'num_workers': 4,'drop_last': True}
 normalize : False
 scheduler: plateau
 makeTest: True
@@ -18,8 +18,8 @@ model:
   in_channels : 1
   dropout: True   # (bool) Use dropout or not
   prob: 0.1 # float: 0. - 0.99
-  addParams : {patch_W: 384,patch_H: 384, negative_slope_linear: 0.01, negative_slope_Encoder : 0.01}
-  # classifierOn : True
+  #addParams : {patch_W: 384,patch_H: 384, negative_slope_linear: 0.01, negative_slope_Encoder : 0.01}
+  classifierOn : True
   # Model options
   #  UNetFlood: (For this moldel you can add ->> classifierOn : True)
   #  UNetClassiFlood
@@ -45,5 +45,5 @@ metric_fn :
 optimizer:
   _target_: torch.optim.Adam
   maximize : True
-  lr: 0.1
-  weight_decay : 0.1
+  lr: 0.5
+  weight_decay : 0.5
