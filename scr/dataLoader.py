@@ -146,7 +146,7 @@ def customDataloader(dataset:customDataSet, args:dict) -> DataLoader:
     '''
     customDL = DataLoader(dataset,
                         batch_size = args['batch_size'],
-                        shuffle = False,
+                        shuffle = True,
                         num_workers = args['num_workers'],
                         pin_memory = False, 
                         drop_last = args['drop_last'],
