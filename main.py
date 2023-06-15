@@ -76,6 +76,7 @@ def logger(cfg: DictConfig, nameByTime):
     logging.info(f"Parameters of weights initialization: {cfg.parameters['initWeightParams']}")
     logging.info(f"Loss: {cfg.parameters.loss_fn}")
     logging.info(f"Optimizer: {cfg.parameters.optimizer}")
+    logging.info(f"Metric function: {cfg.parameters.metric_fn}")
     logging.info(f"DataLoader args: {cfg.parameters['dataLoaderArgs']}")        
 
 @hydra.main(version_base=None, config_path=f"config", config_name="configPC.yaml")
