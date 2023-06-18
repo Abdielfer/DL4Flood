@@ -1,7 +1,7 @@
 import os
 import csv
 import numpy as np
-# import torch
+import torch
 from torch.utils.data import Dataset, DataLoader,random_split
 import torchvision.transforms as transforms
 from skimage import transform
@@ -14,11 +14,11 @@ import random
 class customDataSet(Dataset):
     def __init__(self, 
                 fullList:os.path,
-                inLineTransformation:bool = True,
+                inLineTransform:bool = True,
                 validationMode:bool = False,
-                normalize:bool = True):
+                normalize:bool = False):
         super(Dataset, self).__init__()
-        self.inLineTransformation = inLineTransformation
+        self.inLineTransformation = inLineTransform
         self.img_list, self.mask_list = createImageMaskList(fullList)
         self.validationMode = validationMode
         self.Normalization = normalize
@@ -144,16 +144,23 @@ def customDataloader(dataset:customDataSet, args:dict) -> DataLoader:
     '''
     @args: Dic : {'batch_size': 1, 'num_workers': 1,'drop_last': True}
     '''
+    g = torch.Generator()
+    g.manual_seed(0)
     customDL = DataLoader(dataset,
                         batch_size = args['batch_size'],
                         shuffle = True,
                         num_workers = args['num_workers'],
                         pin_memory = False, 
                         drop_last = args['drop_last'],
+                        worker_init_fn=seed_worker,
+                        generator=g,
                         )
-    
     return customDL
 
+def seed_worker(worker_id):
+    worker_seed = torch.initial_seed() % 2**32
+    np.random.seed(worker_seed)
+    random.seed(worker_seed)
 
 ## Helper functions 
 # "on Going code, not ready yet"

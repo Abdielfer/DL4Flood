@@ -6,11 +6,10 @@
 import numpy as np
 import datetime
 import torch
-# model.add(layers.Dense(64, activation=opt))
+torch.backends.cudnn.benchmark = False ## To ensure Torch choice the same algorith all along the process and help with repetability. 
 import matplotlib.pyplot as plt
 from scr import dataLoader as DL
 from torch.utils.tensorboard import SummaryWriter
-from scr import losses
 from scr import util as U
 import logging
 trainLogger = logging.getLogger(__name__)

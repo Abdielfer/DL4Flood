@@ -150,7 +150,6 @@ class UNet(nn.Module):
         # print('input_data.size()[2:] shape', input_data.size()[2:])
         final = nn.functional.interpolate(selfFinal, input_data.size()[2:], mode='bilinear', align_corners=True)
         # print('Final shape after interpolating self.final(decode1), input_data.size()[2:]:', final.shape)
-        
         return final
 
 ####   Unet Flood ___   ####
@@ -264,11 +263,11 @@ class UNetFlood(nn.Module):
         decode1 = self.decode1(conv1, decode2)
         selfFinal = self.final(decode1)
         interpolation = nn.functional.interpolate(selfFinal, input_data.size()[2:], mode='bilinear', align_corners=True)
-        if self.ClassifierOn:
-            linear1Activated = self.PRelu(self.linear1D(interpolation.flatten(2)))
-            maxpool_1D = self.maxpool_1D(linear1Activated)
-            linear2Activated = self.PRelu(self.linear1D(maxpool_1D))       
-            return self.output(linear2Activated.view(input_data.shape))
+        # if self.ClassifierOn:
+        #     linear1Activated = self.PRelu(self.linear1D(interpolation.flatten(2)))
+        #     maxpool_1D = self.maxpool_1D(linear1Activated)
+        #     linear2Activated = self.PRelu(self.linear1D(maxpool_1D))       
+        #     return self.output(linear2Activated.view(input_data.shape))
         return interpolation
 
 ####   UNet Classi Flood  ####
@@ -352,8 +351,8 @@ class UNetClassiFlood(nn.Module):
         self.addPrams = addParams
         self.NSlopeEncoder = addParams['negative_slope_Encoder'] 
         self.NSlopeLinear = addParams['negative_slope_linear']
-        # self.Patch_W = addParams['patch_W']
-        # self.Patch_W = addParams['patch_H']
+        Patch_W = addParams['patch_W']
+        Patch_H = addParams['patch_H']
         self.classes = classes
         self.conv1 = EncodingBlock_LeakyRelu(in_channels, 64, dropout=dropout, prob=prob)
         self.maxpool1 = nn.MaxPool2d(kernel_size=2)
@@ -369,9 +368,12 @@ class UNetClassiFlood(nn.Module):
         self.decode2 = DecodingBlock_LeakyRelu(256, 128)
         self.decode1 = DecodingBlock_LeakyRelu(128, 64)
         self.final2DConv = nn.Conv2d(64, classes, kernel_size=1)   
-        self.linear1D = nn.Conv1d(1,1,kernel_size=1)
+        self.linear1D = nn.Conv1d(classes,classes,kernel_size=1)
+        self.linear2D = nn.Conv2d(classes,classes,kernel_size=1)
         # self.linear1DChanelReduction = nn.Conv1d(classes,1, kernel_size=1)
         self.maxpool_1D = nn.MaxPool1d(kernel_size=1)
+        self.linearMaxpool_2D = nn.MaxPool2d(kernel_size=1)
+        self.Normalization2D = nn.LayerNorm([classes,Patch_H,Patch_W])
         # self.leakyRelu = nn.LeakyReLU(negative_slope=self.NSlopeLinear)
         self.output = nn.Sigmoid()
         
@@ -391,11 +393,13 @@ class UNetClassiFlood(nn.Module):
         decode1 = self.decode1(conv1, decode2)
         lastConv2D = self.final2DConv(decode1)  
         interpolation = nn.functional.interpolate(lastConv2D, input_data.size()[2:], mode='bilinear', align_corners=True)
-        linear1Activated = F.leaky_relu(self.linear1D(interpolation.flatten(2)),negative_slope=self.NSlopeLinear)
-        maxpool_1D = self.maxpool_1D(linear1Activated)
-        linear2Activated = F.leaky_relu(self.linear1D(maxpool_1D),negative_slope=self.NSlopeLinear)       
-        # linear2 = self.linear1D(maxpool_1D)
-        return self.output(linear2Activated.view(input_data.shape))
+        linear1Activated = F.leaky_relu(self.linear2D(interpolation),negative_slope=self.NSlopeLinear)
+        maxpool_2D = self.linearMaxpool_2D(linear1Activated)
+        normalOutput = self.Normalization2D(maxpool_2D)
+        # linear2Activated = F.leaky_relu(self.linear1D(maxpool_1D),negative_slope=self.NSlopeLinear)       
+        # # linear2 = self.linear1D(maxpool_1D)
+        # self.output(linear2Activated.view(input_data.shape))
+        return normalOutput
 
 
 

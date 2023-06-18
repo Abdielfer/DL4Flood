@@ -45,11 +45,12 @@ class excecuteTraining():
         self.initWeightFunc = instantiate(OmegaConf.create(cfg.parameters['init_weight']))
         self.initWeightParams = cfg.parameters['initWeightParams']
         normalize = cfg.parameters['normalize']
-        self.trainDataSet = D.customDataSet(cfg['trainingDataList'], normalize= normalize)
+        inTransform = cfg.parameters['inlineTransform']
+        self.trainDataSet = D.customDataSet(cfg['trainingDataList'], normalize= normalize,inLineTransform= inTransform)
         self.train_DLoader = D.customDataloader(self.trainDataSet,args)   
-        self.valDataSet = D.customDataSet(cfg['validationDataList'],normalize= normalize, validationMode = True)
+        self.valDataSet = D.customDataSet(cfg['validationDataList'],normalize= normalize,inLineTransform= inTransform, validationMode = True)
         self.val_DLoader = D.customDataloader(self.valDataSet,args)
-        self.testDataSet = D.customDataSet(cfg['testingDataList'], normalize= normalize, validationMode = True)
+        self.testDataSet = D.customDataSet(cfg['testingDataList'], normalize= normalize,inLineTransform= inTransform, validationMode = True)
         self.test_DLoader = D.customDataloader(self.testDataSet,args)  
         model = OmegaConf.create(cfg.parameters['model'])
         self.model = instantiate(model)
@@ -78,16 +79,20 @@ def logger(cfg: DictConfig, nameByTime):
     logging.info(f"Optimizer: {cfg.parameters.optimizer}")
     logging.info(f"Metric function: {cfg.parameters.metric_fn}")
     logging.info(f"DataLoader args: {cfg.parameters['dataLoaderArgs']}")        
+    logging.info(f"Training DataSet: {cfg['trainingDataList']}")   
+    logging.info(f"Validation DataSet: {cfg['validationDataList']}")
+    logging.info(f"Test DataSet: {cfg['testingDataList']}")
+
 
 @hydra.main(version_base=None, config_path=f"config", config_name="configPC.yaml")
 def main(cfg: DictConfig):
     nameByTime = U.makeNameByTime()
     # ## Spliting Trn-Val
-    # trnList, valList = U.splitPerRegion(cfg['rawDataList'])
+    # trnList, valList = U.splitPerRegion(cfg['rawDataList'],trnFract = cfg['trnFract'])
     # U.createCSVFromList(cfg['trainingDataList'], trnList)
     # U.createCSVFromList(cfg['validationDataList'],valList)
 
-    # ### Performe offline transformations
+    ### Performe offline transformations
     # transformer = applyPermanentTransformation(cfg)
     # transformer.transform()
 

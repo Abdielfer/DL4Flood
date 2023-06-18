@@ -104,7 +104,7 @@ def randomSamplingFromList(listeToSmpl, numberOfSmpl)->int:
     '''
     return random.sample(listeToSmpl, numberOfSmpl)
 
-def splitPerRegion(csvPath, tstFrac:float = .9)->list:
+def splitPerRegion(csvPath, trnFract:float = .95)->list:
     fullList = createListFromCSV(csvPath) 
     imagList = createListFromCSVColumn(csvPath,0,delim=';')
     lenimagList = len(imagList)
@@ -123,7 +123,7 @@ def splitPerRegion(csvPath, tstFrac:float = .9)->list:
         parent,_,_ = get_parenPath_name_ext(imagList[i])
         if start != parent:
             regionCounter+=1
-            trnToAdd, tstToAdd = distrubutePathInTrnTst(allPath,tstFrac)
+            trnToAdd, tstToAdd = distrubutePathInTrnTst(allPath,trnFract=trnFract)
             trn.extend(trnToAdd)
             tst.extend(tstToAdd)
             # print(f"Training set evolution : {len(trn)} vs Teste set {len(tst)} >> Total {len(trn)+len(tst)}")
@@ -133,7 +133,7 @@ def splitPerRegion(csvPath, tstFrac:float = .9)->list:
             if start == lastParent:
                 regionCounter+=1
                 allPath = imagList[i:-1]
-                trnToAdd, tstToAdd = distrubutePathInTrnTst(allPath,tstFrac)
+                trnToAdd, tstToAdd = distrubutePathInTrnTst(allPath,trnFract=trnFract)
                 trn.extend(trnToAdd)
                 tst.extend(tstToAdd)
                 # print(f"Training set evolution : {len(trn)} vs Teste set {len(tst)} >> Total {len(trn)+len(tst)}")
@@ -145,13 +145,13 @@ def splitPerRegion(csvPath, tstFrac:float = .9)->list:
         if i == lenimagList: break
     return trn,tst
 
-def distrubutePathInTrnTst(allPath,trnPercent)->list:
-    trnPErcent = int(len(allPath)*.9)
-    srandomSamples = randomSamplingFromList(allPath,trnPErcent) 
+def distrubutePathInTrnTst(allSampesPath,trnFract:float = 0.9)->list:
+    trnPErcent = int(len(allSampesPath)*trnFract)
+    srandomSamples = randomSamplingFromList(allSampesPath,trnPErcent) 
     trn, tst = [],[]
     for item in srandomSamples:
-        trn.append(allPath.pop(allPath.index(item)))
-    tst = allPath
+        trn.append(allSampesPath.pop(allSampesPath.index(item)))
+    tst = allSampesPath
     return trn,tst
   
 def importDataSet(dataSetName, targetCol: str):
