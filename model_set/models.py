@@ -370,6 +370,7 @@ class UNetClassiFlood(nn.Module):
         self.final2DConv = nn.Conv2d(64, classes, kernel_size=1)   
         self.linear1D = nn.Conv1d(classes,classes,kernel_size=1)
         self.linear2D = nn.Conv2d(classes,classes,kernel_size=1)
+        self.conv2D = nn.Conv2d(classes, classes, kernel_size=3)
         # self.linear1DChanelReduction = nn.Conv1d(classes,1, kernel_size=1)
         self.maxpool_1D = nn.MaxPool1d(kernel_size=1)
         self.linearMaxpool_2D = nn.MaxPool2d(kernel_size=1)
@@ -393,13 +394,13 @@ class UNetClassiFlood(nn.Module):
         decode1 = self.decode1(conv1, decode2)
         lastConv2D = self.final2DConv(decode1)  
         interpolation = nn.functional.interpolate(lastConv2D, input_data.size()[2:], mode='bilinear', align_corners=True)
-        linear1Activated = F.leaky_relu(self.linear2D(interpolation),negative_slope=self.NSlopeLinear)
-        maxpool_2D = self.linearMaxpool_2D(linear1Activated)
-        normalOutput = self.Normalization2D(maxpool_2D)
+        conv2d =self.conv2D(interpolation)
+        linearConv = self.linear2D(conv2d)
+        # normalOutput = self.Normalization2D(maxpool_2D)
         # linear2Activated = F.leaky_relu(self.linear1D(maxpool_1D),negative_slope=self.NSlopeLinear)       
         # # linear2 = self.linear1D(maxpool_1D)
         # self.output(linear2Activated.view(input_data.shape))
-        return normalOutput
+        return self.output(linearConv)
 
 
 
