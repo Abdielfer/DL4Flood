@@ -627,7 +627,7 @@ def plotHistogram(raster, bins: int=50, bandNumber: int = 1):
           histtype='stepfilled', alpha=0.5)
     return True
 
-#### Compute globals Mean and STD from a set of ranter imkages###
+#### Compute globals Mean and STD from a set of raster images###
 class standardizer():
     def __init__(self) -> None:
         '''
@@ -722,6 +722,13 @@ def computeRaterStats(rasterPath:os.path):
     rasMean = np.mean(rasDataNan)
     rasNoNaNCont = np.count_nonzero(rasDataNan != np.nan)
     return rasMin, rasMax, rasMean, rasNoNaNCont
+
+def computeMatrixStats(input):
+    '''
+    @input: must be np.array or torch.tensor
+    '''
+    matrix = input.detach().cpu().numpy() if torch.is_tensor(input) else input.detach().cpu()
+    return np.min(matrix), np.max(matrix), np.mean(matrix) 
 
 ## From hereon NOT READY !!!
 def clipRasterWithPoligon(rastPath, polygonPath,outputPath):

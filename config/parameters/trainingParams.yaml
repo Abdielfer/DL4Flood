@@ -1,7 +1,7 @@
 
 ### ~\config\parameters\configTraining.yaml
 targetColName: percentage
-epochs : 50
+epochs : 1
 dataLoaderArgs :  {'batch_size': 1, 'num_workers': 4,'drop_last': True}
 normalize : False
 inlineTransform : False
@@ -25,18 +25,26 @@ init_weight:
   _target_: torch.nn.init.normal_
   # torch.nn.init.kaiming_normal_  -->> initWeightParams: {mode:'fan_out', nonlinearity :'leaky_relu'} #Options : nonlinearity :'leaky_relu' or 'relu' 
   # torch.nn.init.normal_  -->> initWeightParams:{mean:0.0, std : 0.01}
-initWeightParams: {mean:0.0, std : 0.01} 
+initWeightParams: {mean: 0.0, std : 0.01} 
 ## Loss
 loss_fn:
   _partial_: True 
-  _target_: scr.losses.lovasz_hinge  #torch.nn.functional.binary_cross_entropy_with_logits  #
+  _target_: torch.nn.functional.binary_cross_entropy
+  ## Possible targets
+  # scr.losses.lovasz_hinge  
+  # torch.nn.functional.binary_cross_entropy_with_logits  
+  # torch.nn.functional.binary_cross_entropy
+  # 
 ## Metric
 metric_fn :
   _partial_: True 
-  _target_: scr.losses.iou_binary   #torcheval.metrics.functional.binary_accuracy  
+  _target_: torcheval.metrics.functional.binary_accuracy  
+  # Metric options: 
+  # scr.losses.iou_binary   
+  # 
 ## Optimizer
 optimizer:
   _target_: torch.optim.Adam
-  maximize : True
-  lr: 5
+  maximize : False
+  lr: 0.05
   #weight_decay : 0.1

@@ -49,6 +49,11 @@ class models_trainer(object):
     def _make_train_step_fn(self):
         def perform_train_step_fn(x, y):
             self.model.train()
+            min,max,mean = U.computeMatrixStats(y)
+            assert not torch.isnan(y).any()
+            assert not torch.isnan(x).any()
+            if min<0 or max>1:   
+                trainLogger.info(f"Mask stats : min {min},max {max},mean {mean}")
             yhat = self.model(x)
             loss = self.loss_fn(yhat, y)
             loss.backward()
@@ -62,6 +67,11 @@ class models_trainer(object):
     def _make_val_step_fn(self):
         def perform_val_step_fn(x, y):
             self.model.eval()
+            assert not torch.isnan(y).any()
+            assert not torch.isnan(x).any()
+            min,max,mean = U.computeMatrixStats(y)
+            if min<0 or max>1:   
+                trainLogger.info(f"Mask stats : min {min},max {max},mean {mean}")
             yhat = self.model(x)
             loss = self.loss_fn(yhat, y)
             item  = loss.item()
@@ -118,6 +128,7 @@ class models_trainer(object):
             for x,y in zip(x_batch, y_batch):
                 yHat = self.predict2(x)
                 y_item= y.detach().cpu().numpy() if torch.is_tensor(y) else y.squeeze().detach().cpu()
+                y_item = torch.squeeze(y_item) if (torch.is_tensor(y) and len(y_item.shape()) > 3) else y_item
                 metric.append(self.metric_fn(yHat, y_item))
             ItemMetric = np.mean(metric)
             miniBathcMetric.append(ItemMetric)
