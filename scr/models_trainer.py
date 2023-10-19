@@ -187,7 +187,6 @@ class models_trainer(object):
         '''
         self.model.eval()
         y_hat_tensor = self.model(torch.unsqueeze(x,0).to(self.device))
-        self.model.train()
         # Detaches it, brings it to CPU and back to Numpy
         mask = torch.round(torch.sigmoid(y_hat_tensor)).to(torch.int32)
         return mask.detach().cpu().numpy()

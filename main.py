@@ -59,7 +59,7 @@ class excecuteTraining():
         criterion = OmegaConf.create(cfg.parameters['optimizer'])
         self.optimizer = instantiate(criterion, params=self.model.parameters())
         self.metric_fn = instantiate(cfg.parameters['metric_fn'])
-        
+       
     
     def excecute(self,epochs):
         self.trainer = MT.models_trainer(self.model,self.loss_fn,self.optimizer, self.metric_fn, self.initWeightFunc,self.initWeightParams)
@@ -101,11 +101,17 @@ def main(cfg: DictConfig):
     # MinMaxMeanSTD = computeStandardizers(cfg)
     # print(MinMaxMeanSTD)
     
-    ## Training cycle
+    #### Activate Training cycle
+    # logger(cfg,nameByTime)
+    # trainer = excecuteTraining(cfg)
+    # model,_ = trainer.excecute(cfg.parameters['epochs'])
+    # U.saveModel(model,nameByTime)
+
+    #### Performe inference
     logger(cfg,nameByTime)
     trainer = excecuteTraining(cfg)
-    model,_ = trainer.excecute(cfg.parameters['epochs'])
-    U.saveModel(model,nameByTime)
+    # model,_ = trainer.excecute(cfg.parameters['epochs'])
+    # U.saveModel(model,nameByTime)
 
 
 if __name__ == "__main__":

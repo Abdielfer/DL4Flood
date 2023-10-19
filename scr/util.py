@@ -487,7 +487,7 @@ def makeMatching_TifMask_List(scvPath,tifDir,delim:str =',',)->list:
 def checkDevice():
     return 'cuda' if torch.cuda.is_available() else 'cpu'
 
- ### Metrics ####  
+### Metrics ####  
 def accuracyFromConfusionMatrix(confusion_matrix):
     '''
     Only for binary
