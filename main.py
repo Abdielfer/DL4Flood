@@ -87,7 +87,7 @@ def logger(cfg: DictConfig, nameByTime):
 
 @hydra.main(version_base=None, config_path=f"config", config_name="configPC.yaml")
 def main(cfg: DictConfig):
-    nameByTime = U.makeNameByTime()
+    # nameByTime = U.makeNameByTime()
     # ## Spliting Trn-Val
     # trnList, valList = U.splitPerRegion(cfg['rawDataList'],trnFract = cfg['trnFract'])
     # U.createCSVFromList(cfg['trainingDataList'], trnList)
@@ -98,8 +98,8 @@ def main(cfg: DictConfig):
     # transformer.transform()
 
     ### Compute standardizers
-    # MinMaxMeanSTD = computeStandardizers(cfg)
-    # print(MinMaxMeanSTD)
+    MinMaxMeanSTD = computeStandardizers(cfg)
+    print(MinMaxMeanSTD)
     
     #### Activate Training cycle
     # logger(cfg,nameByTime)
@@ -108,8 +108,8 @@ def main(cfg: DictConfig):
     # U.saveModel(model,nameByTime)
 
     #### Performe inference
-    logger(cfg,nameByTime)
-    trainer = excecuteTraining(cfg)
+    # logger(cfg,nameByTime)
+    # trainer = excecuteTraining(cfg)
     # model,_ = trainer.excecute(cfg.parameters['epochs'])
     # U.saveModel(model,nameByTime)
 

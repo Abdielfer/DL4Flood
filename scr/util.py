@@ -636,39 +636,75 @@ class standardizer():
          - Save the global values as *csv file.
          - Standardize a raster set or a single raster, using the globals min, max, mean and std
         '''
-        self.globMin = np.inf
-        self.globMax = -np.inf
-        self.globMean = 0
-        self.globSTD = 0
+        self.globMin = [np.inf]
+        self.globMax = [-np.inf]
+        self.globMean = [0]
+        self.globSTD = [0]
        
     def computeGlobalValues(self, rasterListPath, extraNoData = None):
         '''
+        Note: Is tested to simple band Raster. Implementation pof Multiband in progress. 
         Compute the global Standard Deviation from a list of raters.
         @rasterList: a list of raster path.
         '''
-        rasterList = createListFromCSVColumn(rasterListPath,0,';')
-        globalCont = 0  # The total number of pixels in <rasterList>, different from NoData value.
-        cummulativeMean = 0
+        rasterList = createListFromCSVColumn(rasterListPath,0)
+        globalCont = [0] # The total number of pixels in <rasterList>, different from NoData value.
+        cummulativeMean = [0]
         # Compute globalMin, globalMax, globalMean
         for ras in rasterList:
             localMin, localMax,rasMean,rasCont = computeRaterStats(ras) #rasMin, rasMax, rasMean, rasNoNaNCont
             self.updateGlobalMinMax(localMin, localMax)
-            globalCont += rasCont
-            cummulativeMean += rasMean
-        self.globMean = cummulativeMean/len(rasterList)  # From the math principle: the mean of subsets means is also the global mean. 
-        print(f"Globals : min:{self.globMin}>> max:{self.globMax} >> MEan : {self.globMean} >> globalCount {globalCont}" )
+            self.updateCumulativeValues(globalCont,rasCont)
+            self.updateCumulativeValues(cummulativeMean,rasMean)
+        
+        self.globMean = [num/len(rasterList) for num in cummulativeMean] # From the math principle: the mean of subsets means is also the global mean. 
+        print(f"Globals per channel: min:{self.globMin}--- max:{self.globMax} --- Mman : {self.globMean} --- globalCount {globalCont}" )
         #Compute globa quadratic error
         globSumQuadraticError = 0 
         for raster in rasterList:
             rasData = replaceRastNoDataWithNan(raster,extraNoDataVal= extraNoData)
             globSumQuadraticError += computeSumQuadraticError(rasData,self.globMean)
         
-        self.globSTD = math.sqrt(globSumQuadraticError/globalCont )
+        print(f"SglobSumQuadraticError Type : {type(globSumQuadraticError)}")
+        print(f"SglobSumQuadraticError  : {globSumQuadraticError}")
+
+        globaCoutArray = np.array(globalCont)
+        print(f"globalCont : {globaCoutArray}")
+        globalError = globSumQuadraticError/globaCoutArray.reshape(-1)
+        print(f"globalError shape : {globalError}")
+        self.globSTD = np.sqrt(globalError)
         print(f"Final values: GlobSumSQError {globSumQuadraticError}, GlobSTD : {self.globSTD}")
 
-    def updateGlobalMinMax(self, localMin,localMax):
-        if localMin < self.globMin: self.globMin = localMin
-        if localMax > self.globMax: self.globMax = localMax
+    def updateGlobalMinMax(self, localMin:list,localMax:list):
+        ## Update global MIn
+        for i, value in enumerate(localMin):
+             # If we've reached the end of globalValues, append the rest of local and break
+            if i >= len(self.globMin):
+                self.globMin.extend(localMin[i:])
+                break
+             # Otherwise, update the cumulative value in globalValues
+            else:
+                self.globMin[i] = min(self.globMin[i], value)
+        
+         ## Update global Max
+        for i, value in enumerate(localMax):
+            if i >= len(self.globMax):
+                self.globMax.extend(localMax[i:])
+                break
+            else:
+                self.globMax[i] = max(self.globMax[i], value)
+        
+    def updateCumulativeValues(self,globalValues, local):
+        # Loop over each value in local
+        for i, value in enumerate(local):
+            # If we've reached the end of globalValues, append the rest of local and break
+            if i >= len(globalValues):
+                globalValues.extend(local[i:])
+                break
+            # Otherwise, update the cumulative value in globalValues
+            else:
+                globalValues[i] += value
+        return globalValues
 
     def setGlobals(self,min = None, max = None, mean = None, std = None):
         if min is not None: self.globMin = min
@@ -680,7 +716,7 @@ class standardizer():
         self.extraNoData = value
 
     def getGlobals(self):
-        return self.globMin, self.globMax, self.globMean, self.globSTD   
+        return {'globMin':self.globMin,'globMax': self.globMax, 'globMean':self.globMean, 'globSTD':self.globSTD}   
 
     def saveGlobals(self, pathToSaveCSV: os.path):
         globals = {'globalMin': self.globMin, 'globalMax': self.globMax, 'globalMean': self.globMean, 'globalSTD': self.globSTD}
@@ -701,10 +737,13 @@ def replaceRastNoDataWithNan(rasterPath:os.path,extraNoDataVal: float = None)-> 
 def computeSumQuadraticError(arr:np.array, mean):
     '''
     Compute elementwise quadratic errors of a np.array, and its sum excluding np.nan values
+    NOTE: Array and mean must have the same number of channels (First dimention). 
     @mean: This mean could be the mean of <<arr>> or an external mean. 
+    
     '''
-    quadError = (arr - mean)**2
-    return np.nansum(quadError)
+    meanReshaoed = np.array(mean).reshape(-1, 1, 1) 
+    quadError = (arr - meanReshaoed)**2
+    return np.nansum(quadError, axis=(1,2))
 
 def computeRaterStats(rasterPath:os.path):
     '''
@@ -715,12 +754,14 @@ def computeRaterStats(rasterPath:os.path):
     @rasMean: Rater mean.
     @rasNoNaNSum: Raster sum of NOT NoData pixels
     @rasNoNaNCont: Raster count of all NOT NoData pixels
+
+    axis=(1,2) This musht be a reflection of your stack. In this example, we're interested in channel globals and Array shape is (C,W,H). 
     '''
     rasDataNan = replaceRastNoDataWithNan(rasterPath)
-    rasMin = np.min(rasDataNan)
-    rasMax = np.max(rasDataNan)
-    rasMean = np.mean(rasDataNan)
-    rasNoNaNCont = np.count_nonzero(rasDataNan != np.nan)
+    rasMin = np.min(rasDataNan,axis=(1, 2))
+    rasMax = np.max(rasDataNan,axis=(1, 2))
+    rasMean = np.mean(rasDataNan,axis=(1, 2))
+    rasNoNaNCont = np.count_nonzero(rasDataNan!= np.nan,axis=(1, 2))
     return rasMin, rasMax, rasMean, rasNoNaNCont
 
 def computeMatrixStats(input):
@@ -730,7 +771,7 @@ def computeMatrixStats(input):
     matrix = input.detach().cpu().numpy() if torch.is_tensor(input) else input.detach().cpu()
     return np.min(matrix), np.max(matrix), np.mean(matrix) 
 
-## From hereon NOT READY !!!
+## From here on NOT READY !!!
 def clipRasterWithPoligon(rastPath, polygonPath,outputPath):
     '''
     Clip a raster (*.GTiff) with a single polygon feature 

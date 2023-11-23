@@ -11,11 +11,11 @@ config_path: ${hydra:runtime.config_sources}
 projectRoot: C:\Users\abfernan\CrossCanFloodMapping\DL4Flood
 saveModelsPath: ${hydra:runtime.cwd} 
 
-dataRoot: C:\Users\abfernan\CrossCanFloodMapping\DatasetCNNFlood\C1Dataset\Percentage_1_intensSampl\
+dataRoot: C:\Users\abfernan\CrossCanFloodMapping\DatasetCNNFlood\NormalizerMultiBand\
 rawDataList: C:\Users\abfernan\CrossCanFloodMapping\DatasetCNNFlood\C1Dataset\Percentage_1_intensSampl\Percentage_1_intensSampl_feat1_min-annot1_trn.csv
 trnFract : 0.95  # Max 1, min 0
-trainingDataList : ${dataRoot}\SplitedTrainingSet_PlusRotated_intensivSamp.csv #TrainingSetForDebug.csv
+trainingDataList : ${dataRoot}\ListMultiBandDEMS.csv #TrainingSetForDebug.csv
 validationDataList: ${dataRoot}\SplitedValSet.csv
 testingDataList: ${dataRoot}\Percentage_1_intensSampl_tst\Percentage_1_intensSampl_tst_feat1_min-annot1_trn.csv
 permanentTransformetionSavePath : ${dataRoot}\trn
-standardizerSavePath : ${dataRoot}\standardizers.csv
+standardizerSavePath : ${dataRoot}\Normalizers.csv
