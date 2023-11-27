@@ -329,19 +329,19 @@ def listALLFilesInDirByExt_fullPath(cwd, ext = '.csv'):
         fullList.extend(localList) 
     return fullList
 
-def createListFromCSV(csv_file_location, delim:str =','):  
+def createListFromCSV(csv_file_location, header:str=None, delim:str =','):  
     '''
     @return: list from a <csv_file_location>.
     Argument:
     @csv_file_location: full path file location and name.
     '''       
-    df = pd.read_csv(csv_file_location, index_col= None, delimiter = delim)
+    df = pd.read_csv(csv_file_location, index_col= None, header=header, delimiter = delim)
     out = []
     for i in range(0,df.shape[0]):
         out.append(df.iloc[i,:].tolist()[0])    
     return out
 
-def createListFromCSVColumn(csv_file_location, col_idx:int, delim:str =','):  
+def createListFromCSVColumn(csv_file_location, col_idx:int, header:str=None,delim:str =','):  
     '''
     @return: list from <col_id> in <csv_file_location>.
     Argument:
@@ -350,7 +350,7 @@ def createListFromCSVColumn(csv_file_location, col_idx:int, delim:str =','):
     @col_idx : number of the desired collumn to extrac info from (Consider index 0 for the first column)
     '''       
     x=[]
-    df = pd.read_csv(csv_file_location, index_col= None, delimiter = delim)
+    df = pd.read_csv(csv_file_location, index_col= None,header=header,delimiter = delim)
     fin = df.shape[0]
     for i in range(0,fin):
         x.append(df.iloc[i,col_idx])
@@ -647,31 +647,35 @@ class standardizer():
         Compute the global Standard Deviation from a list of raters.
         @rasterList: a list of raster path.
         '''
-        rasterList = createListFromCSVColumn(rasterListPath,0)
+        rasterList = createListFromCSV(rasterListPath)
+        print(rasterList)
         globalCont = [0] # The total number of pixels in <rasterList>, different from NoData value.
         cummulativeMean = [0]
         # Compute globalMin, globalMax, globalMean
         for ras in rasterList:
             localMin, localMax,rasMean,rasCont = computeRaterStats(ras) #rasMin, rasMax, rasMean, rasNoNaNCont
+            print(f"Locals per dems: min:{localMin}--- max:{localMax} --- Mean : {rasMean} --- globalCount {rasCont}" )
             self.updateGlobalMinMax(localMin, localMax)
             self.updateCumulativeValues(globalCont,rasCont)
             self.updateCumulativeValues(cummulativeMean,rasMean)
         
         self.globMean = [num/len(rasterList) for num in cummulativeMean] # From the math principle: the mean of subsets means is also the global mean. 
-        print(f"Globals per channel: min:{self.globMin}--- max:{self.globMax} --- Mman : {self.globMean} --- globalCount {globalCont}" )
+        print(f"Globals per channel: min:{self.globMin}--- max:{self.globMax} --- Mean : {self.globMean} --- globalCount {globalCont}" )
         #Compute globa quadratic error
         globSumQuadraticError = 0 
+        meanReshaped =  np.array(self.globMean).reshape(-1, 1, 1) 
         for raster in rasterList:
             rasData = replaceRastNoDataWithNan(raster,extraNoDataVal= extraNoData)
-            globSumQuadraticError += computeSumQuadraticError(rasData,self.globMean)
+            globSumQuadraticError += computeSumQuadraticError(rasData,meanReshaped)
         
-        print(f"SglobSumQuadraticError Type : {type(globSumQuadraticError)}")
-        print(f"SglobSumQuadraticError  : {globSumQuadraticError}")
+        # print(f"SglobSumQuadraticError Type : {type(globSumQuadraticError)}")
+        # print(f"SglobSumQuadraticError  : {globSumQuadraticError}")
 
         globaCoutArray = np.array(globalCont)
-        print(f"globalCont : {globaCoutArray}")
+        # print(f"globalCont : {globaCoutArray}")
         globalError = globSumQuadraticError/globaCoutArray.reshape(-1)
-        print(f"globalError shape : {globalError}")
+        # print(f"globalCont re-shaped : {globalError}")
+        # print(f"globalError shaped : {globalError}")
         self.globSTD = np.sqrt(globalError)
         print(f"Final values: GlobSumSQError {globSumQuadraticError}, GlobSTD : {self.globSTD}")
 
@@ -684,7 +688,7 @@ class standardizer():
                 break
              # Otherwise, update the cumulative value in globalValues
             else:
-                self.globMin[i] = min(self.globMin[i], value)
+                self.globMin[i] = min((self.globMin[i], value))
         
          ## Update global Max
         for i, value in enumerate(localMax):
@@ -692,7 +696,7 @@ class standardizer():
                 self.globMax.extend(localMax[i:])
                 break
             else:
-                self.globMax[i] = max(self.globMax[i], value)
+                self.globMax[i] = max((self.globMax[i], value))
         
     def updateCumulativeValues(self,globalValues, local):
         # Loop over each value in local
@@ -731,6 +735,7 @@ class standardizer():
 def replaceRastNoDataWithNan(rasterPath:os.path,extraNoDataVal: float = None)-> np.array:
     rasterData,profil = readRaster(rasterPath)
     NOData = profil['nodata']
+    print(f"DEMS NoData : {NOData}")
     rasterDataNan = np.where(((rasterData == NOData)|(rasterData == extraNoDataVal)), np.nan, rasterData) 
     return rasterDataNan
 
@@ -741,8 +746,7 @@ def computeSumQuadraticError(arr:np.array, mean):
     @mean: This mean could be the mean of <<arr>> or an external mean. 
     
     '''
-    meanReshaoed = np.array(mean).reshape(-1, 1, 1) 
-    quadError = (arr - meanReshaoed)**2
+    quadError = (arr - mean)**2
     return np.nansum(quadError, axis=(1,2))
 
 def computeRaterStats(rasterPath:os.path):
@@ -758,9 +762,9 @@ def computeRaterStats(rasterPath:os.path):
     axis=(1,2) This musht be a reflection of your stack. In this example, we're interested in channel globals and Array shape is (C,W,H). 
     '''
     rasDataNan = replaceRastNoDataWithNan(rasterPath)
-    rasMin = np.min(rasDataNan,axis=(1, 2))
-    rasMax = np.max(rasDataNan,axis=(1, 2))
-    rasMean = np.mean(rasDataNan,axis=(1, 2))
+    rasMin = np.nanmin(rasDataNan,axis=(1, 2))
+    rasMax = np.nanmax(rasDataNan,axis=(1, 2))
+    rasMean = np.nanmean(rasDataNan,axis=(1, 2))
     rasNoNaNCont = np.count_nonzero(rasDataNan!= np.nan,axis=(1, 2))
     return rasMin, rasMax, rasMean, rasNoNaNCont
 
